@@ -1,0 +1,47 @@
+[
+  {
+    "folder": "foo",
+    "title": "foo",
+    "tags": ["foo", "bar", "baz"],
+    "date": "2021-01-02T15:04:05Z",
+    "favorite": false,
+    "file": "foo.go",
+    "language": "go"
+  },
+  {
+    "folder": "qux",
+    "title": "qux",
+    "tags": ["qux", "foo", "baz"],
+    "date": "2021-01-02T15:04:05Z",
+    "favorite": true,
+    "file": "qux.go",
+    "language": "go"
+  },
+  {
+    "folder": "qux",
+    "title": "quux",
+    "tags": ["qux", "foo", "baz"],
+    "date": "2021-01-02T15:04:05Z",
+    "favorite": true,
+    "file": "qux.go",
+    "language": "go"
+  },
+  {
+    "folder": "bar",
+    "title": "bar",
+    "tags": ["foo", "bar", "baz"],
+    "date": "2021-01-02T15:04:05Z",
+    "favorite": false,
+    "file": "main.go",
+    "language": "go"
+  },
+  {
+    "folder": "baz",
+    "title": "baz",
+    "tags": ["foo", "bar", "baz"],
+    "date": "2021-01-02T15:04:05Z",
+    "favorite": false,
+    "file": "main.go",
+    "language": "go"
+  }
+]
