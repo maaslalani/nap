@@ -61,6 +61,7 @@ func main() {
 		ContentStyle: DefaultStyles.Content.Blurred,
 		ListStyle:    DefaultStyles.Snippets.Focused,
 		FoldersStyle: DefaultStyles.Folders.Blurred,
+		keys:         DefaultKeyMap,
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err = p.Run()

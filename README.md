@@ -1,3 +1,3 @@
 # Snooze
 
-Snooze is a terminal snippet manager.
+Snooze is a snippet manager in your terminal.

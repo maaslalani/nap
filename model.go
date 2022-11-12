@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/alecthomas/chroma/quick"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,6 +25,8 @@ const (
 // Model represents the state of the application.
 // It contains all the snippets organized in folders.
 type Model struct {
+	// the key map.
+	keys KeyMap
 	// the working directory.
 	Workdir string
 	// code Snippets.
@@ -31,9 +36,12 @@ type Model struct {
 	// the list of Folders to display to the user.
 	Folders list.Model
 	// the viewport of the Code snippet.
-	Code viewport.Model
+	Code        viewport.Model
+	LineNumbers viewport.Model
 	// the current active pane of focus.
-	Active int
+	Pane int
+	// the current snippet being displayed.
+	ActiveSnippet Snippet
 
 	ListStyle    SnippetsBaseStyle
 	FoldersStyle FoldersBaseStyle
@@ -63,28 +71,41 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
 		var b bytes.Buffer
-		b.WriteString(m.ContentStyle.Title.Render(msg.Title))
-		b.WriteRune('\n')
-		content, err := os.ReadFile(".leaf/" + msg.Folder + "/" + msg.File)
+		m.ActiveSnippet = Snippet(msg)
+		content, err := os.ReadFile(configDir + "/" + msg.Folder + "/" + msg.File)
 		if err != nil {
+			m.LineNumbers.SetContent(" ~ ")
 			m.Code.SetContent(b.String() + "Error: unable to read file.")
 			return m, nil
 		}
 		err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
+		var lineNumbers strings.Builder
+		height := lipgloss.Height(b.String())
+		for i := 0; i < height; i++ {
+			lineNumbers.WriteString(fmt.Sprintf("%3d │ \n", i+1))
+		}
+		m.LineNumbers.SetContent(lineNumbers.String())
 		m.Code.SetContent(b.String())
 		return m, nil
 	case tea.WindowSizeMsg:
 		m.List.SetHeight(msg.Height - 1)
 		m.Folders.SetHeight(msg.Height - 1)
-		m.Code.Height = msg.Height - 1
-		m.Code.Width = msg.Width
+		m.Code.Height = msg.Height - 3
+		m.Code.Width = msg.Width - m.List.Width() - m.Folders.Width() - 20
+		m.LineNumbers.Height = msg.Height - 3
+		m.LineNumbers.Width = 5
 		return m, nil
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyTab:
+		if m.List.FilterState() == list.Filtering {
+			break
+		}
+		switch {
+		case key.Matches(msg, m.keys.NextPane):
 			m.nextPane()
-		case tea.KeyShiftTab:
+		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
 		}
 	}
 
@@ -94,42 +115,50 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // nextPane sets the next pane to be active.
 func (m *Model) nextPane() {
-	m.Active = (m.Active + 1) % MaxPane
+	m.Pane = (m.Pane + 1) % MaxPane
 }
 
 // previousPane sets the previous pane to be active.
 func (m *Model) previousPane() {
-	m.Active--
-	if m.Active < 0 {
-		m.Active = MaxPane - 1
+	m.Pane--
+	if m.Pane < 0 {
+		m.Pane = MaxPane - 1
 	}
 }
 
+const tabSpaces = 4
+
 // updateActivePane updates the currently active pane.
 func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
+	var cmds []tea.Cmd
 	var cmd tea.Cmd
-	switch m.Active {
+	switch m.Pane {
 	case FolderPane:
 		m.ListStyle = DefaultStyles.Snippets.Blurred
 		m.ContentStyle = DefaultStyles.Content.Blurred
 		m.FoldersStyle = DefaultStyles.Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
+		cmds = append(cmds, cmd)
 	case SnippetPane:
 		m.ListStyle = DefaultStyles.Snippets.Focused
 		m.ContentStyle = DefaultStyles.Content.Blurred
 		m.FoldersStyle = DefaultStyles.Folders.Blurred
 		m.List, cmd = m.List.Update(msg)
+		cmds = append(cmds, cmd)
 	case ContentPane:
 		m.ListStyle = DefaultStyles.Snippets.Blurred
 		m.ContentStyle = DefaultStyles.Content.Focused
 		m.FoldersStyle = DefaultStyles.Folders.Blurred
 		m.Code, cmd = m.Code.Update(msg)
+		cmds = append(cmds, cmd)
+		m.LineNumbers, cmd = m.LineNumbers.Update(msg)
+		cmds = append(cmds, cmd)
 	}
 	m.List.Styles.TitleBar = m.ListStyle.TitleBar
 	m.List.Styles.Title = m.ListStyle.Title
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
-	return cmd
+	return tea.Batch(cmds...)
 }
 
 // View returns the view string for the application model.
@@ -138,6 +167,8 @@ func (m *Model) View() string {
 		lipgloss.Left,
 		m.FoldersStyle.Base.Render(m.Folders.View()),
 		m.ListStyle.Base.Render(m.List.View()),
-		m.ContentStyle.Base.Render(m.Code.View()),
+		lipgloss.JoinVertical(lipgloss.Top, m.ContentStyle.Title.Render(m.ActiveSnippet.Title),
+			lipgloss.JoinHorizontal(lipgloss.Left, m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
+				m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))))),
 	)
 }

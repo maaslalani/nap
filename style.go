@@ -2,12 +2,13 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-const primaryColor = lipgloss.Color("#00dbd9")
-const primaryColorSubdued = lipgloss.Color("#00918e")
+const primaryColor = lipgloss.Color("#67ecff")
+const primaryColorSubdued = lipgloss.Color("#439dab")
 const secondaryColor = lipgloss.Color("63")
 
 const gray = lipgloss.Color("240")
 const black = lipgloss.Color("0")
+const brightBlack = lipgloss.Color("237")
 const white = lipgloss.Color("#FFF")
 
 type SnippetsStyle struct {
@@ -96,13 +97,13 @@ var DefaultStyles = Styles{
 	Content: ContentStyle{
 		Focused: ContentBaseStyle{
 			Base:       lipgloss.NewStyle().Margin(0, 1),
-			Title:      lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 0).Padding(0, 1),
-			LineNumber: lipgloss.NewStyle(),
+			Title:      lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
+			LineNumber: lipgloss.NewStyle().Foreground(brightBlack),
 		},
 		Blurred: ContentBaseStyle{
 			Base:       lipgloss.NewStyle().Margin(0, 1),
-			Title:      lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 0).Padding(0, 1),
-			LineNumber: lipgloss.NewStyle(),
+			Title:      lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
+			LineNumber: lipgloss.NewStyle().Foreground(black),
 		},
 	},
 }

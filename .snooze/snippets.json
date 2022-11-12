@@ -38,7 +38,7 @@
   {
     "folder": "baz",
     "title": "baz",
-    "tags": ["foo", "bar", "baz"],
+    "tags": ["boop", "beep", "zoop"],
     "date": "2021-01-02T15:04:05Z",
     "favorite": false,
     "file": "main.go",
