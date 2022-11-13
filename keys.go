@@ -8,6 +8,7 @@ type KeyMap struct {
 	Search        key.Binding
 	ToggleHelp    key.Binding
 	NewSnippet    key.Binding
+	RenameSnippet key.Binding
 	DeleteSnippet key.Binding
 	EditSnippet   key.Binding
 	CopySnippet   key.Binding
@@ -19,7 +20,7 @@ type KeyMap struct {
 
 // DefaultKeyMap is the default key map for the application.
 var DefaultKeyMap = KeyMap{
-	Quit:          key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "exit")),
+	Quit:          key.NewBinding(key.WithKeys("q", "esc", "ctrl+c"), key.WithHelp("q", "exit")),
 	Search:        key.NewBinding(key.WithKeys("/"), key.WithHelp("/", "search")),
 	ToggleHelp:    key.NewBinding(key.WithKeys("?"), key.WithHelp("?", "help")),
 	NewSnippet:    key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new")),

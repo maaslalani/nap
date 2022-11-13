@@ -32,6 +32,9 @@ func (d snippetDelegate) Spacing() int {
 // We use this to update the snippet code view.
 func (d snippetDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return func() tea.Msg {
+		if m.SelectedItem() == nil {
+			return nil
+		}
 		return updateViewMsg(m.SelectedItem().(Snippet))
 	}
 }
@@ -39,6 +42,9 @@ func (d snippetDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 // Render renders the list item for the snippet which includes the title,
 // folder, and date.
 func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+	if item == nil {
+		return
+	}
 	s, ok := item.(Snippet)
 	if !ok {
 		return

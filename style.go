@@ -9,8 +9,8 @@ const secondaryColor = lipgloss.Color("63")
 const brightGreen = lipgloss.Color("34")
 const green = lipgloss.Color("29")
 
-const brightRed = lipgloss.Color("198")
-const red = lipgloss.Color("124")
+const brightRed = lipgloss.Color("#f11635")
+const red = lipgloss.Color("#d62c45")
 
 const gray = lipgloss.Color("240")
 const black = lipgloss.Color("0")

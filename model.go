@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -90,6 +91,10 @@ type updateViewMsg Snippet
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
+		if len(m.Snippets) <= 0 {
+			return m, nil
+		}
+
 		var b bytes.Buffer
 		m.ActiveSnippet = Snippet(msg)
 		content, err := os.ReadFile(m.config.Home + "/" + msg.Folder + "/" + msg.File)
@@ -126,6 +131,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.List.RemoveItem(m.List.Index())
 				m.resetTitleBar()
 				m.State = NavigatingState
+				m.updateKeyMap()
 			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
 				m.resetTitleBar()
 				m.State = NavigatingState
@@ -139,7 +145,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
+		case key.Matches(msg, m.keys.NewSnippet):
+			m.State = CreatingState
+			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
+			f, _ := os.Create(m.config.Home + "/" + file)
+			f.WriteString("Untitled Snippet")
+			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file})
+			m.updateKeyMap()
 		case key.Matches(msg, m.keys.CopySnippet):
+			m.State = CopyingState
 			content, err := os.ReadFile(m.config.Home + "/" + m.ActiveSnippet.Folder + "/" + m.ActiveSnippet.File)
 			if err != nil {
 				return m, nil
@@ -154,9 +168,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return tea.KeyMsg{}
 			})
 		case key.Matches(msg, m.keys.DeleteSnippet):
+			m.Pane = SnippetPane
+			m.updateActivePane(msg)
 			m.State = DeletingState
 			m.List.Styles.TitleBar.Background(red)
-			m.List.Title = "Delete " + m.ActiveSnippet.Title + " snippet? (y/N)"
+			m.List.Title = "Delete snippet? (y/N)"
 			m.ListStyle.SelectedTitle.Foreground(brightRed)
 			m.ListStyle.SelectedSubtitle.Foreground(red)
 		case key.Matches(msg, m.keys.EditSnippet):
@@ -230,6 +246,13 @@ func (m *Model) resetTitleBar() {
 	m.ListStyle.SelectedTitle.Foreground(primaryColor)
 	m.ListStyle.SelectedSubtitle.Foreground(primaryColorSubdued)
 	m.List.Title = "Snippets"
+}
+
+func (m *Model) updateKeyMap() {
+	hasItems := len(m.List.Items()) > 0
+	m.keys.DeleteSnippet.SetEnabled(hasItems)
+	m.keys.CopySnippet.SetEnabled(hasItems)
+	m.keys.EditSnippet.SetEnabled(hasItems)
 }
 
 // View returns the view string for the application model.
