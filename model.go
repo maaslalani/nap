@@ -60,8 +60,6 @@ type Model struct {
 	Pane int
 	// the current state / action of the application.
 	State int
-	// the current snippet being displayed.
-	ActiveSnippet Snippet
 
 	// stying for components
 	ListStyle    SnippetsBaseStyle
@@ -96,7 +94,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		var b bytes.Buffer
-		m.ActiveSnippet = Snippet(msg)
 		content, err := os.ReadFile(m.config.Home + "/" + msg.Folder + "/" + msg.File)
 		if err != nil {
 			m.LineNumbers.SetContent(" ~ ")
@@ -154,13 +151,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateKeyMap()
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
-			content, err := os.ReadFile(m.config.Home + "/" + m.ActiveSnippet.Folder + "/" + m.ActiveSnippet.File)
+			content, err := os.ReadFile(m.config.Home + "/" + m.activeSnippet().Folder + "/" + m.activeSnippet().File)
 			if err != nil {
 				return m, nil
 			}
 			clipboard.WriteAll(string(content))
 			m.List.Styles.TitleBar.Background(green)
-			m.List.Title = "Copied " + m.ActiveSnippet.Title + "!"
+			m.List.Title = "Copied " + m.activeSnippet().Title + "!"
 			m.ListStyle.SelectedTitle.Foreground(brightGreen)
 			m.ListStyle.SelectedSubtitle.Foreground(green)
 			return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
@@ -180,9 +177,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if editor == "" {
 				editor = "vim"
 			}
-			cmd := exec.Command(editor, m.config.Home+"/"+m.ActiveSnippet.Folder+"/"+m.ActiveSnippet.File)
+			cmd := exec.Command(editor, m.config.Home+"/"+m.activeSnippet().Folder+"/"+m.activeSnippet().File)
 			return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
-				return updateViewMsg(m.ActiveSnippet)
+				return updateViewMsg(m.activeSnippet())
 			})
 		}
 	}
@@ -255,6 +252,14 @@ func (m *Model) updateKeyMap() {
 	m.keys.EditSnippet.SetEnabled(hasItems)
 }
 
+func (m *Model) activeSnippet() Snippet {
+	item := m.List.SelectedItem()
+	if item == nil {
+		return Snippet{Title: "No Snippets"}
+	}
+	return item.(Snippet)
+}
+
 // View returns the view string for the application model.
 func (m *Model) View() string {
 	return lipgloss.JoinVertical(
@@ -264,7 +269,7 @@ func (m *Model) View() string {
 			m.FoldersStyle.Base.Render(m.Folders.View()),
 			m.ListStyle.Base.Render(m.List.View()),
 			lipgloss.JoinVertical(lipgloss.Top,
-				m.ContentStyle.Title.Render(m.ActiveSnippet.Title),
+				m.ContentStyle.Title.Render(m.activeSnippet().Title),
 				lipgloss.JoinHorizontal(lipgloss.Left,
 					m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
 					m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))),

@@ -14,6 +14,8 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+const defaultSnippetFileContent = `[ { "folder": "", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`
+
 func main() {
 	config := Config{}
 	if err := env.Parse(&config); err != nil {
@@ -21,10 +23,24 @@ func main() {
 	}
 
 	var snippets []Snippet
-	dir, err := os.ReadFile(config.Home + "/" + config.File)
+	file := config.Home + "/" + config.File
+	dir, err := os.ReadFile(file)
+	if err != nil {
+		// File does not exist, create one.
+		err := os.MkdirAll(config.Home, os.ModePerm)
+		if err != nil {
+			fmt.Printf("Unable to create directory %s, %+v", config.Home, err)
+		}
+		f, err := os.Create(file)
+		if err != nil {
+			fmt.Printf("Unable to create file %s, %+v", file, err)
+		}
+		_, _ = f.WriteString(defaultSnippetFileContent)
+		dir = []byte(defaultSnippetFileContent)
+	}
 	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
-		fmt.Println("Unable to unmarshal snippets.json file", err)
+		fmt.Printf("Unable to unmarshal %s file, %+v\n", file, err)
 		return
 	}
 
