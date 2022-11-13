@@ -146,8 +146,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.State = CreatingState
 			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
 			f, _ := os.Create(m.config.Home + "/" + file)
-			f.WriteString("Untitled Snippet")
-			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file})
+			f.WriteString(untitledSnippet)
+			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go"})
 			m.updateKeyMap()
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
