@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -13,13 +14,15 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const configDir = ".snooze"
-const configFile = "snippets.json"
-
 func main() {
-	config, err := os.ReadFile(configDir + "/" + configFile)
+	config := Config{}
+	if err := env.Parse(&config); err != nil {
+		fmt.Println("Unable to unmarshal config", err)
+	}
+
 	var snippets []Snippet
-	err = json.Unmarshal(config, &snippets)
+	dir, err := os.ReadFile(config.Home + "/" + config.File)
+	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
 		fmt.Println("Unable to unmarshal snippets.json file", err)
 		return
@@ -43,6 +46,8 @@ func main() {
 	folderList.SetShowHelp(false)
 	folderList.SetFilteringEnabled(false)
 	folderList.SetShowStatusBar(false)
+	folderList.DisableQuitKeybindings()
+
 	snippetList.SetShowHelp(false)
 	snippetList.SetShowFilter(true)
 	snippetList.Title = "Snippets"
@@ -52,6 +57,7 @@ func main() {
 	snippetList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(white).MarginLeft(1)
 	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(primaryColorSubdued)
 	snippetList.SetStatusBarItemName("snippet", "snippets")
+	snippetList.DisableQuitKeybindings()
 
 	content := viewport.New(80, 0)
 
@@ -65,6 +71,7 @@ func main() {
 		FoldersStyle: DefaultStyles.Folders.Blurred,
 		keys:         DefaultKeyMap,
 		help:         help.New(),
+		config:       config,
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err = p.Run()

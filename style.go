@@ -6,6 +6,12 @@ const primaryColor = lipgloss.Color("#67ecff")
 const primaryColorSubdued = lipgloss.Color("#439dab")
 const secondaryColor = lipgloss.Color("63")
 
+const brightGreen = lipgloss.Color("34")
+const green = lipgloss.Color("29")
+
+const brightRed = lipgloss.Color("198")
+const red = lipgloss.Color("124")
+
 const gray = lipgloss.Color("240")
 const black = lipgloss.Color("0")
 const brightBlack = lipgloss.Color("237")

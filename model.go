@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/alecthomas/chroma/quick"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -23,9 +26,18 @@ const (
 	FolderPane
 )
 
+const (
+	NavigatingState int = iota
+	DeletingState
+	CreatingState
+	CopyingState
+)
+
 // Model represents the state of the application.
 // It contains all the snippets organized in folders.
 type Model struct {
+	// the config map.
+	config Config
 	// the key map.
 	keys KeyMap
 	// the help model.
@@ -45,6 +57,8 @@ type Model struct {
 	LineNumbers viewport.Model
 	// the current active pane of focus.
 	Pane int
+	// the current state / action of the application.
+	State int
 	// the current snippet being displayed.
 	ActiveSnippet Snippet
 
@@ -78,7 +92,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateViewMsg:
 		var b bytes.Buffer
 		m.ActiveSnippet = Snippet(msg)
-		content, err := os.ReadFile(configDir + "/" + msg.Folder + "/" + msg.File)
+		content, err := os.ReadFile(m.config.Home + "/" + msg.Folder + "/" + msg.File)
 		if err != nil {
 			m.LineNumbers.SetContent(" ~ ")
 			m.Code.SetContent(b.String() + "Error: unable to read file.")
@@ -87,10 +101,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
 		var lineNumbers strings.Builder
 		height := lipgloss.Height(b.String())
-		for i := 0; i < height; i++ {
-			lineNumbers.WriteString(fmt.Sprintf("%3d │ \n", i+1))
+		for i := 1; i < height; i++ {
+			lineNumbers.WriteString(fmt.Sprintf("%3d \n", i))
 		}
-		m.LineNumbers.SetContent(lineNumbers.String())
+		m.LineNumbers.SetContent(lineNumbers.String() + "  ~ \n")
 		m.Code.SetContent(b.String())
 		return m, nil
 	case tea.WindowSizeMsg:
@@ -106,6 +120,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.List.FilterState() == list.Filtering {
 			break
 		}
+		if m.State == DeletingState {
+			switch {
+			case key.Matches(msg, m.keys.Confirm):
+				m.List.RemoveItem(m.List.Index())
+				m.resetTitleBar()
+				m.State = NavigatingState
+			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
+				m.resetTitleBar()
+				m.State = NavigatingState
+			}
+			return m, nil
+		}
 		switch {
 		case key.Matches(msg, m.keys.NextPane):
 			m.nextPane()
@@ -113,6 +139,35 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
+		case key.Matches(msg, m.keys.CopySnippet):
+			content, err := os.ReadFile(m.config.Home + "/" + m.ActiveSnippet.Folder + "/" + m.ActiveSnippet.File)
+			if err != nil {
+				return m, nil
+			}
+			clipboard.WriteAll(string(content))
+			m.List.Styles.TitleBar.Background(green)
+			m.List.Title = "Copied " + m.ActiveSnippet.Title + "!"
+			m.ListStyle.SelectedTitle.Foreground(brightGreen)
+			m.ListStyle.SelectedSubtitle.Foreground(green)
+			return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
+				m.resetTitleBar()
+				return tea.KeyMsg{}
+			})
+		case key.Matches(msg, m.keys.DeleteSnippet):
+			m.State = DeletingState
+			m.List.Styles.TitleBar.Background(red)
+			m.List.Title = "Delete " + m.ActiveSnippet.Title + " snippet? (y/N)"
+			m.ListStyle.SelectedTitle.Foreground(brightRed)
+			m.ListStyle.SelectedSubtitle.Foreground(red)
+		case key.Matches(msg, m.keys.EditSnippet):
+			editor := os.Getenv("EDITOR")
+			if editor == "" {
+				editor = "vim"
+			}
+			cmd := exec.Command(editor, m.config.Home+"/"+m.ActiveSnippet.Folder+"/"+m.ActiveSnippet.File)
+			return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
+				return updateViewMsg(m.ActiveSnippet)
+			})
 		}
 	}
 
@@ -167,6 +222,14 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 
 	return tea.Batch(cmds...)
+}
+
+// resetTitleBar resets the title bar to original navigating state.
+func (m *Model) resetTitleBar() {
+	m.List.Styles.TitleBar.Background(primaryColorSubdued)
+	m.ListStyle.SelectedTitle.Foreground(primaryColor)
+	m.ListStyle.SelectedSubtitle.Foreground(primaryColorSubdued)
+	m.List.Title = "Snippets"
 }
 
 // View returns the view string for the application model.
