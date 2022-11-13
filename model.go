@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/alecthomas/chroma/quick"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -27,6 +28,10 @@ const (
 type Model struct {
 	// the key map.
 	keys KeyMap
+	// the help model.
+	help help.Model
+	// the height of the terminal.
+	height int
 	// the working directory.
 	Workdir string
 	// code Snippets.
@@ -43,6 +48,7 @@ type Model struct {
 	// the current snippet being displayed.
 	ActiveSnippet Snippet
 
+	// stying for components
 	ListStyle    SnippetsBaseStyle
 	FoldersStyle FoldersBaseStyle
 	ContentStyle ContentBaseStyle
@@ -88,11 +94,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Code.SetContent(b.String())
 		return m, nil
 	case tea.WindowSizeMsg:
-		m.List.SetHeight(msg.Height - 1)
-		m.Folders.SetHeight(msg.Height - 1)
-		m.Code.Height = msg.Height - 3
+		m.height = msg.Height
+		m.List.SetHeight(msg.Height - 4)
+		m.Folders.SetHeight(msg.Height - 4)
+		m.Code.Height = msg.Height - 4
 		m.Code.Width = msg.Width - m.List.Width() - m.Folders.Width() - 20
-		m.LineNumbers.Height = msg.Height - 3
+		m.LineNumbers.Height = msg.Height - 4
 		m.LineNumbers.Width = 5
 		return m, nil
 	case tea.KeyMsg:
@@ -158,17 +165,26 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 	m.List.Styles.Title = m.ListStyle.Title
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
+
 	return tea.Batch(cmds...)
 }
 
 // View returns the view string for the application model.
 func (m *Model) View() string {
-	return lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		m.FoldersStyle.Base.Render(m.Folders.View()),
-		m.ListStyle.Base.Render(m.List.View()),
-		lipgloss.JoinVertical(lipgloss.Top, m.ContentStyle.Title.Render(m.ActiveSnippet.Title),
-			lipgloss.JoinHorizontal(lipgloss.Left, m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
-				m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))))),
+	return lipgloss.JoinVertical(
+		lipgloss.Top,
+		lipgloss.JoinHorizontal(
+			lipgloss.Left,
+			m.FoldersStyle.Base.Render(m.Folders.View()),
+			m.ListStyle.Base.Render(m.List.View()),
+			lipgloss.JoinVertical(lipgloss.Top,
+				m.ContentStyle.Title.Render(m.ActiveSnippet.Title),
+				lipgloss.JoinHorizontal(lipgloss.Left,
+					m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
+					m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))),
+				),
+			),
+		),
+		"  "+m.help.View(m.keys),
 	)
 }

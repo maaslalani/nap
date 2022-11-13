@@ -10,25 +10,34 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+// FilterValue is the snippet filter value that can be used when searching.
 func (s Snippet) FilterValue() string {
 	return s.Folder + "/" + s.Title + "\n" + "+" + strings.Join(s.Tags, "+") + "\n" + s.Language
 }
 
+// snippetDelegate represents the snippet list item.
 type snippetDelegate struct{}
 
+// Height is the number of lines the snippet list item takes up.
 func (d snippetDelegate) Height() int {
 	return 2
 }
 
+// Spacing is the number of lines to insert between list items.
 func (d snippetDelegate) Spacing() int {
 	return 1
 }
 
+// Update is called when the list is updated.
+// We use this to update the snippet code view.
 func (d snippetDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return func() tea.Msg {
 		return updateViewMsg(m.SelectedItem().(Snippet))
 	}
 }
+
+// Render renders the list item for the snippet which includes the title,
+// folder, and date.
 func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	s, ok := item.(Snippet)
 	if !ok {
@@ -43,26 +52,34 @@ func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.
 	fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.UnselectedSubtitle.Render(humanize.Time(s.Date)))
 }
 
+// Folder represents a group of snippets in a directory.
 type Folder string
 
+// FilterValue is the searchable value for the folder.
 func (f Folder) FilterValue() string {
 	return string(f)
 }
 
+// folderDelegate represents a folder list item.
 type folderDelegate struct{}
 
+// Height is the number of lines the folder list item takes up.
 func (d folderDelegate) Height() int {
 	return 1
 }
 
+// Spacing is the number of lines to insert between folder items.
 func (d folderDelegate) Spacing() int {
 	return 0
 }
 
+// Update is what is called when the folder selection is updated.
+// TODO: Update the filter search for the snippets with the folder name.
 func (d folderDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	return nil
 }
 
+// Render renders a folder list item.
 func (d folderDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
 	f, ok := item.(Folder)
 	if !ok {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -50,6 +51,7 @@ func main() {
 	snippetList.FilterInput.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
 	snippetList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(white).MarginLeft(1)
 	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(primaryColorSubdued)
+	snippetList.SetStatusBarItemName("snippet", "snippets")
 
 	content := viewport.New(80, 0)
 
@@ -62,6 +64,7 @@ func main() {
 		ListStyle:    DefaultStyles.Snippets.Focused,
 		FoldersStyle: DefaultStyles.Folders.Blurred,
 		keys:         DefaultKeyMap,
+		help:         help.New(),
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err = p.Run()
