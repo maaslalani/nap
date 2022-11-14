@@ -16,7 +16,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "%s" } ]`
+var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "%s" } ]`
 
 func main() {
 	config := Config{Home: defaultHome()}
@@ -29,7 +29,7 @@ func main() {
 	dir, err := os.ReadFile(file)
 	if err != nil {
 		// File does not exist, create one.
-		err := os.MkdirAll(filepath.Join(config.Home, defaultFolder), os.ModePerm)
+		err := os.MkdirAll(filepath.Join(config.Home, defaultSnippetFolder), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Unable to create directory %s, %+v", config.Home, err)
 		}
@@ -37,7 +37,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("Unable to create file %s, %+v", file, err)
 		}
-		content := fmt.Sprintf(defaultSnippetFileFormat, defaultFolder, config.DefaultLanguage)
+		content := fmt.Sprintf(defaultSnippetFileFormat, defaultSnippetFolder, defaultSnippetName, config.DefaultLanguage)
 		_, _ = f.WriteString(content)
 		dir = []byte(content)
 	}

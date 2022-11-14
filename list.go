@@ -12,7 +12,7 @@ import (
 
 // FilterValue is the snippet filter value that can be used when searching.
 func (s Snippet) FilterValue() string {
-	return s.Folder + "/" + s.Title + "\n" + "+" + strings.Join(s.Tags, "+") + "\n" + s.Language
+	return s.Folder + "/" + s.Name + "\n" + "+" + strings.Join(s.Tags, "+") + "\n" + s.Language
 }
 
 // snippetDelegate represents the snippet list item.
@@ -35,7 +35,7 @@ func (d snippetDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 		if m.SelectedItem() == nil {
 			return nil
 		}
-		return updateViewMsg(m.SelectedItem().(Snippet))
+		return updateContentMsg(m.SelectedItem().(Snippet))
 	}
 }
 
@@ -50,11 +50,11 @@ func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.
 		return
 	}
 	if index == m.Index() {
-		fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.SelectedTitle.Render(s.Title))
+		fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.SelectedTitle.Render(s.Name))
 		fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.SelectedSubtitle.Render(humanize.Time(s.Date)))
 		return
 	}
-	fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.UnselectedTitle.Render(s.Title))
+	fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.UnselectedTitle.Render(s.Name))
 	fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.UnselectedSubtitle.Render(humanize.Time(s.Date)))
 }
 
