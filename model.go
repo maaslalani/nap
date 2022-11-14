@@ -90,18 +90,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateViewMsg:
 		return m.updateContentView(msg)
 	case tea.WindowSizeMsg:
-		m.height = msg.Height
-		m.List.SetHeight(msg.Height - 4)
-		m.Folders.SetHeight(msg.Height - 4)
-		m.Code.Height = msg.Height - 4
+		m.height = msg.Height - 4
+		m.List.SetHeight(m.height)
+		m.Folders.SetHeight(m.height)
+		m.Code.Height = m.height
 		m.Code.Width = msg.Width - m.List.Width() - m.Folders.Width() - 20
-		m.LineNumbers.Height = msg.Height - 4
+		m.LineNumbers.Height = m.height
 		m.LineNumbers.Width = 5
 		return m, nil
 	case tea.KeyMsg:
 		if m.List.FilterState() == list.Filtering {
 			break
 		}
+
 		if m.State == DeletingState {
 			switch {
 			case key.Matches(msg, m.keys.Confirm):

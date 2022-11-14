@@ -28,7 +28,7 @@ var DefaultKeyMap = KeyMap{
 	EditSnippet:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
 	CopySnippet:   key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
-	Cancel:        key.NewBinding(key.WithKeys("N"), key.WithHelp("N", "cancel")),
+	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
 	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "navigate")),
 	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "navigate")),
 }
