@@ -62,7 +62,6 @@ type Model struct {
 	Pane int
 	// the current state / action of the application.
 	State int
-
 	// stying for components
 	ListStyle    SnippetsBaseStyle
 	FoldersStyle FoldersBaseStyle
@@ -77,7 +76,7 @@ func (m *Model) Init() tea.Cmd {
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 	m.updateKeyMap()
 	return func() tea.Msg {
-		return updateViewMsg(m.activeSnippet())
+		return updateViewMsg(m.selectedSnippet())
 	}
 }
 
@@ -89,47 +88,7 @@ type updateViewMsg Snippet
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
-		if len(m.List.Items()) <= 0 {
-			m.LineNumbers.SetContent(" ~ \n ~ ")
-			m.Code.SetContent(fmt.Sprintf("%s\n%s %s %s",
-				m.ContentStyle.EmptyHint.Render("No snippets."),
-				m.ContentStyle.EmptyHint.Render("Press"),
-				m.ContentStyle.EmptyHintKey.Render("n"),
-				m.ContentStyle.EmptyHint.Render("to create a new snippet."),
-			))
-			return m, nil
-		}
-
-		var b bytes.Buffer
-		content, err := os.ReadFile(m.config.Home + "/" + msg.Folder + "/" + msg.File)
-		if err != nil {
-			m.LineNumbers.SetContent(" ~ ")
-			m.Code.SetContent(b.String() + "Error: unable to read file.")
-			return m, nil
-		}
-		if string(content) == "" {
-			m.LineNumbers.SetContent(" ~ \n ~ ")
-			m.Code.SetContent(fmt.Sprintf("%s %s %s",
-				m.ContentStyle.EmptyHint.Render("Press"),
-				m.ContentStyle.EmptyHintKey.Render("e"),
-				m.ContentStyle.EmptyHint.Render("to edit snippet."),
-			))
-			return m, nil
-		}
-		err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
-		if err != nil {
-			m.LineNumbers.SetContent(" ~ ")
-			m.Code.SetContent(b.String() + "Error: unable to highlight file.")
-			return m, nil
-		}
-		var lineNumbers strings.Builder
-		height := lipgloss.Height(b.String())
-		for i := 1; i < height; i++ {
-			lineNumbers.WriteString(fmt.Sprintf("%3d \n", i))
-		}
-		m.LineNumbers.SetContent(lineNumbers.String() + "  ~ \n")
-		m.Code.SetContent(b.String())
-		return m, nil
+		return m.updateContentView(msg)
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
 		m.List.SetHeight(msg.Height - 4)
@@ -151,7 +110,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.State = NavigatingState
 				m.updateKeyMap()
 				return m, func() tea.Msg {
-					return updateViewMsg(m.activeSnippet())
+					return updateViewMsg(m.selectedSnippet())
 				}
 			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
 				m.resetTitleBar()
@@ -183,13 +142,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
-			content, err := os.ReadFile(filepath.Join(m.config.Home, m.activeSnippet().Folder, m.activeSnippet().File))
+			content, err := os.ReadFile(m.selectedSnippetFilePath())
 			if err != nil {
 				return m, nil
 			}
 			clipboard.WriteAll(string(content))
 			m.List.Styles.TitleBar.Background(green)
-			m.List.Title = "Copied " + m.activeSnippet().Title + "!"
+			m.List.Title = "Copied " + m.selectedSnippet().Title + "!"
 			m.ListStyle.SelectedTitle.Foreground(brightGreen)
 			m.ListStyle.SelectedSubtitle.Foreground(green)
 			return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
@@ -211,9 +170,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if editor == "" {
 				editor = "vim"
 			}
-			cmd := exec.Command(editor, m.config.Home+"/"+m.activeSnippet().Folder+"/"+m.activeSnippet().File)
+			cmd := exec.Command(editor, m.selectedSnippetFilePath())
 			return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
-				return updateViewMsg(m.activeSnippet())
+				return updateViewMsg(m.selectedSnippet())
 			})
 		}
 	}
@@ -221,6 +180,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.updateKeyMap()
 	cmd := m.updateActivePane(msg)
 	return m, cmd
+}
+
+func (m *Model) selectedSnippetFilePath() string {
+	return filepath.Join(m.config.Home, m.selectedSnippet().Folder, m.selectedSnippet().File)
 }
 
 // nextPane sets the next pane to be active.
@@ -234,6 +197,68 @@ func (m *Model) previousPane() {
 	if m.Pane < 0 {
 		m.Pane = MaxPane - 1
 	}
+}
+
+// updateContentView updates the content view with the correct content based on
+// the active snippet or display the appropriate error message / hint message.
+func (m *Model) updateContentView(msg updateViewMsg) (tea.Model, tea.Cmd) {
+	if len(m.List.Items()) <= 0 {
+		m.displayKeyHint("No Snippets.", "Press", "n", "to create a new snippet.")
+		return m, nil
+	}
+
+	var b bytes.Buffer
+	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.Folder, msg.File))
+	if err != nil {
+		m.displayKeyHint("No Content.", "Press", "e", "to edit snippet.")
+		return m, nil
+	}
+
+	if string(content) == "" {
+		m.displayKeyHint("No Content.", "Press", "e", "to edit snippet.")
+		return m, nil
+	}
+
+	err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
+	if err != nil {
+		m.displayError("Unable to highlight file.")
+		return m, nil
+	}
+
+	s := b.String()
+	m.writeLineNumbers(lipgloss.Height(s))
+	m.Code.SetContent(s)
+	return m, nil
+}
+
+// displayKeyHint updates the content viewport with instructions on the
+// relevent key binding that the user should most likely press.
+func (m *Model) displayKeyHint(title, prefix, key, suffix string) {
+	m.LineNumbers.SetContent(" ~ \n ~ ")
+	m.Code.SetContent(fmt.Sprintf("%s\n%s %s %s",
+		m.ContentStyle.EmptyHint.Render(title),
+		m.ContentStyle.EmptyHint.Render(prefix),
+		m.ContentStyle.EmptyHintKey.Render(key),
+		m.ContentStyle.EmptyHint.Render(suffix),
+	))
+}
+
+// displayError updates the content viewport with the error message provided.
+func (m *Model) displayError(error string) {
+	m.LineNumbers.SetContent(" ~ ")
+	m.Code.SetContent(fmt.Sprintf("%s",
+		m.ContentStyle.EmptyHint.Render(error),
+	))
+}
+
+// writeLineNumbers writes the number of line numbers to the line number
+// viewport.
+func (m *Model) writeLineNumbers(n int) {
+	var lineNumbers strings.Builder
+	for i := 1; i < n; i++ {
+		lineNumbers.WriteString(fmt.Sprintf("%3d \n", i))
+	}
+	m.LineNumbers.SetContent(lineNumbers.String() + "  ~ \n")
 }
 
 const tabSpaces = 4
@@ -280,6 +305,8 @@ func (m *Model) resetTitleBar() {
 	m.List.Title = "Snippets"
 }
 
+// updateKeyMap disables or enables the keys based on the current state of the
+// snippet list.
 func (m *Model) updateKeyMap() {
 	hasItems := len(m.List.VisibleItems()) > 0
 	isFiltering := m.List.FilterState() == list.Filtering
@@ -289,7 +316,8 @@ func (m *Model) updateKeyMap() {
 	m.keys.NewSnippet.SetEnabled(!isFiltering)
 }
 
-func (m *Model) activeSnippet() Snippet {
+// selectedSnippet returns the currently selected snippet.
+func (m *Model) selectedSnippet() Snippet {
 	item := m.List.SelectedItem()
 	if item == nil {
 		return Snippet{Title: "No Snippets", Folder: defaultFolder}
@@ -310,9 +338,9 @@ func (m *Model) View() string {
 			m.ListStyle.Base.Render(m.List.View()),
 			lipgloss.JoinVertical(lipgloss.Top,
 				lipgloss.JoinHorizontal(lipgloss.Left,
-					m.ContentStyle.Title.Render(m.activeSnippet().Folder),
+					m.ContentStyle.Title.Render(m.selectedSnippet().Folder),
 					m.ContentStyle.Separator.Render("/"),
-					m.ContentStyle.Title.Render(m.activeSnippet().Title)),
+					m.ContentStyle.Title.Render(m.selectedSnippet().Title)),
 				lipgloss.JoinHorizontal(lipgloss.Left,
 					m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
 					m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))),

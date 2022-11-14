@@ -2,35 +2,44 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
+// primary color and primary color subdued are the colors used for the
+// selection purposes.
 const primaryColor = lipgloss.Color("#B294BB")
 const primaryColorSubdued = lipgloss.Color("#85678F")
 
-const brightGreen = lipgloss.Color("#B5BD68")
-const green = lipgloss.Color("#8C9440")
-
-const brightRed = lipgloss.Color("#CC6666")
-const red = lipgloss.Color("#954D4D")
-
-const gray = lipgloss.Color("240")
+// helpful colors for certain parts of the application.
 const black = lipgloss.Color("#282A2E")
 const brightBlack = lipgloss.Color("#373B41")
+const brightGreen = lipgloss.Color("#B5BD68")
+const brightRed = lipgloss.Color("#CC6666")
+const gray = lipgloss.Color("240")
+const green = lipgloss.Color("#8C9440")
+const red = lipgloss.Color("#954D4D")
 const white = lipgloss.Color("#FFF")
 
+// SnippetsStyle is the style struct to handle the focusing and blurring of the
+// snippets pane in the application.
 type SnippetsStyle struct {
 	Focused SnippetsBaseStyle
 	Blurred SnippetsBaseStyle
 }
 
+// FoldersStyle is the style struct to handle the focusing and blurring of the
+// folders pane in the application.
 type FoldersStyle struct {
 	Focused FoldersBaseStyle
 	Blurred FoldersBaseStyle
 }
 
+// ContentStyle is the style struct to handle the focusing and blurring of the
+// content pane in the application.
 type ContentStyle struct {
 	Focused ContentBaseStyle
 	Blurred ContentBaseStyle
 }
 
+// SnippetsBaseStyle holds the neccessary styling for the snippets pane of
+// the application.
 type SnippetsBaseStyle struct {
 	Base               lipgloss.Style
 	Title              lipgloss.Style
@@ -41,6 +50,8 @@ type SnippetsBaseStyle struct {
 	UnselectedTitle    lipgloss.Style
 }
 
+// FoldersBaseStyle holds the neccessary styling for the folders pane of
+// the application.
 type FoldersBaseStyle struct {
 	Base       lipgloss.Style
 	Title      lipgloss.Style
@@ -49,6 +60,8 @@ type FoldersBaseStyle struct {
 	Unselected lipgloss.Style
 }
 
+// ContentBaseStyle holds the neccessary styling for the content pane of the
+// application.
 type ContentBaseStyle struct {
 	Base         lipgloss.Style
 	Title        lipgloss.Style
@@ -65,6 +78,8 @@ type Styles struct {
 	Content  ContentStyle
 }
 
+// DefaultStyles is the default implementation of the styles struct for all
+// styling in the application.
 var DefaultStyles = Styles{
 	Snippets: SnippetsStyle{
 		Focused: SnippetsBaseStyle{

@@ -18,13 +18,13 @@ import (
 var defaultSnippetFileContent = fmt.Sprintf(`[ { "folder": "%s", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`, defaultFolder)
 
 func main() {
-	config := Config{Home: defaultHome(), File: defaultFile()}
+	config := Config{Home: defaultHome()}
 	if err := env.Parse(&config); err != nil {
 		fmt.Println("Unable to unmarshal config", err)
 	}
 
 	var snippets []Snippet
-	file := config.Home + "/" + config.File
+	file := filepath.Join(config.Home, config.File)
 	dir, err := os.ReadFile(file)
 	if err != nil {
 		// File does not exist, create one.
