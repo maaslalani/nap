@@ -158,7 +158,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.blurInputs()
 				i := m.List.Index()
 				snippet := m.List.SelectedItem().(Snippet)
-				m.List.RemoveItem(i)
 				if m.inputs[nameInput].Value() != "" {
 					snippet.Name = m.inputs[nameInput].Value()
 				} else {
@@ -170,6 +169,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					snippet.Folder = defaultSnippetFolder
 				}
 				snippet.Language = m.inputs[languageInput].Value()
+				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
+				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
+				snippet.File = newFile
+				m.List.RemoveItem(i)
 				m.List.InsertItem(i, snippet)
 				m.pane = snippetPane
 			}
@@ -209,6 +212,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.updateKeyMap()
 		m.updateActivePane(msg)
+		if wasEditing {
+			return m, m.updateContent()
+		}
 
 		return m, cmd
 	case tea.WindowSizeMsg:
@@ -275,8 +281,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if folderItem != nil && folderItem.FilterValue() != "" {
 					folder = folderItem.FilterValue()
 				}
-				file := fmt.Sprintf("snooze-%d.txt", rand.Intn(1000000))
-				_, _ = os.Create(filepath.Join(m.config.Home, folder, file))
+				file := fmt.Sprintf("%s-snippet-%d.%s", folder, rand.Intn(1000000), m.config.DefaultLanguage)
+				_, _ = os.Create(filepath.Join(m.config.Home, file))
 				m.List.InsertItem(m.List.Index(), Snippet{Name: defaultSnippetName, Date: time.Now(), File: file, Language: m.config.DefaultLanguage, Tags: []string{}, Folder: folder})
 				return changeStateMsg{navigatingState}
 			}
@@ -318,20 +324,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// blurInputs blurs all the inputs.
 func (m *Model) blurInputs() {
 	for i := range m.inputs {
 		m.inputs[i].Blur()
 	}
 }
 
+// focusInput focuses the speficied input and blurs the rest.
 func (m *Model) focusInput(i input) tea.Cmd {
 	m.blurInputs()
 	m.inputs[i].CursorEnd()
 	return m.inputs[i].Focus()
 }
 
+// selectedSnippetFilePath returns the file path of the snippet that is
+// currently selected.
 func (m *Model) selectedSnippetFilePath() string {
-	return filepath.Join(m.config.Home, m.selectedSnippet().Folder, m.selectedSnippet().File)
+	return filepath.Join(m.config.Home, m.selectedSnippet().File)
 }
 
 // nextPane sets the next pane to be active.
@@ -363,10 +373,10 @@ func (m *Model) noContentHints() []keyHint {
 	return []keyHint{
 		{m.keys.EditSnippet, "edit contents"},
 		{m.keys.PasteSnippet, "paste clipboard"},
+		{m.keys.TagSnippet, "set tags"},
 		{m.keys.RenameSnippet, "rename"},
 		{m.keys.SetFolder, "set folder"},
 		{m.keys.SetLanguage, "set language"},
-		{m.keys.TagSnippet, "set tags"},
 	}
 }
 
@@ -381,7 +391,7 @@ func (m *Model) updateContentView(msg updateContentMsg) (tea.Model, tea.Cmd) {
 	}
 
 	var b bytes.Buffer
-	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.Folder, msg.File))
+	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.File))
 	if err != nil {
 		m.displayKeyHint(m.noContentHints())
 		return m, nil
@@ -505,7 +515,7 @@ func (m *Model) updateKeyMap() {
 func (m *Model) selectedSnippet() Snippet {
 	item := m.List.SelectedItem()
 	if item == nil {
-		return Snippet{Name: "No Snippets", Folder: defaultSnippetFolder, Language: m.config.DefaultLanguage}
+		return Snippet{Name: "No Snippets", Folder: defaultSnippetFolder, Language: m.config.DefaultLanguage, File: "snooze.txt"}
 	}
 	return item.(Snippet)
 }
