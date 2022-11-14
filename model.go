@@ -137,6 +137,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if folderItem != nil && folderItem.FilterValue() != "" {
 				folder = folderItem.FilterValue()
 			}
+			rand.Seed(time.Now().Unix())
 			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
 			_, _ = os.Create(filepath.Join(m.config.Home, folder, file))
 			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
@@ -151,7 +152,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.List.Title = "Copied " + m.selectedSnippet().Title + "!"
 			m.ListStyle.SelectedTitle.Foreground(brightGreen)
 			m.ListStyle.SelectedSubtitle.Foreground(green)
-			return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
+			return m, tea.Tick(time.Second/2, func(t time.Time) tea.Msg {
 				if m.State == CopyingState {
 					m.resetTitleBar()
 				}
@@ -166,14 +167,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ListStyle.SelectedTitle.Foreground(brightRed)
 			m.ListStyle.SelectedSubtitle.Foreground(red)
 		case key.Matches(msg, m.keys.EditSnippet):
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				editor = "vim"
-			}
-			cmd := exec.Command(editor, m.selectedSnippetFilePath())
-			return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
-				return updateViewMsg(m.selectedSnippet())
-			})
+			return m, m.editSnippet()
 		}
 	}
 
@@ -197,6 +191,18 @@ func (m *Model) previousPane() {
 	if m.Pane < 0 {
 		m.Pane = MaxPane - 1
 	}
+}
+
+// editSnippet opens the editor with the selected snippet file path.
+func (m *Model) editSnippet() tea.Cmd {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vim"
+	}
+	cmd := exec.Command(editor, m.selectedSnippetFilePath())
+	return tea.ExecProcess(cmd, func(err error) tea.Msg {
+		return updateViewMsg(m.selectedSnippet())
+	})
 }
 
 // updateContentView updates the content view with the correct content based on
