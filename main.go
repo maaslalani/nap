@@ -64,6 +64,8 @@ func main() {
 	folderList.SetFilteringEnabled(false)
 	folderList.SetShowStatusBar(false)
 	folderList.DisableQuitKeybindings()
+	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(gray)
+	folderList.SetStatusBarItemName("folder", "folders")
 
 	snippetList.SetShowHelp(false)
 	snippetList.SetShowFilter(true)
@@ -73,6 +75,7 @@ func main() {
 	snippetList.FilterInput.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
 	snippetList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(white).MarginLeft(1)
 	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(primaryColorSubdued)
+	snippetList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(gray)
 	snippetList.SetStatusBarItemName("snippet", "snippets")
 	snippetList.DisableQuitKeybindings()
 
@@ -99,9 +102,17 @@ func main() {
 	fm, ok := model.(*Model)
 	if !ok {
 		fmt.Println("Alas, there was an error.", err)
+		return
 	}
 
 	b, err := json.Marshal(fm.List.Items())
-
-	fmt.Println(string(b))
+	if err != nil {
+		fmt.Println("Could not mashal latest snippet data.", err)
+		return
+	}
+	err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
+	if err != nil {
+		fmt.Println("Could not save snippets file.", err)
+		return
+	}
 }

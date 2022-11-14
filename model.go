@@ -76,10 +76,7 @@ func (m *Model) Init() tea.Cmd {
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 	return func() tea.Msg {
-		if len(m.List.Items()) > 0 {
-			return updateViewMsg(m.List.Items()[0].(Snippet))
-		}
-		return nil
+		return updateViewMsg(m.activeSnippet())
 	}
 }
 
@@ -92,6 +89,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
 		if len(m.List.Items()) <= 0 {
+			m.LineNumbers.SetContent(" ~ ")
+			m.Code.SetContent("press \x1b[36mn\x1b[0m to create a new snippet.")
 			return m, nil
 		}
 
@@ -103,6 +102,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
+		if err != nil {
+			m.LineNumbers.SetContent(" ~ ")
+			m.Code.SetContent(b.String() + "Error: unable to highlight file.")
+			return m, nil
+		}
 		var lineNumbers strings.Builder
 		height := lipgloss.Height(b.String())
 		for i := 1; i < height; i++ {
@@ -131,6 +135,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.resetTitleBar()
 				m.State = NavigatingState
 				m.updateKeyMap()
+				return m, func() tea.Msg {
+					return updateViewMsg(m.activeSnippet())
+				}
 			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
 				m.resetTitleBar()
 				m.State = NavigatingState
@@ -156,7 +163,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			f, _ := os.Create(filepath.Join(m.config.Home, folder, file))
 			f.WriteString(untitledSnippet)
 			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
-			m.updateKeyMap()
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
 			content, err := os.ReadFile(filepath.Join(m.config.Home, m.activeSnippet().Folder, m.activeSnippet().File))
@@ -192,6 +198,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	m.updateKeyMap()
 	cmd := m.updateActivePane(msg)
 	return m, cmd
 }
@@ -254,7 +261,7 @@ func (m *Model) resetTitleBar() {
 }
 
 func (m *Model) updateKeyMap() {
-	hasItems := len(m.List.Items()) > 0
+	hasItems := len(m.List.VisibleItems()) > 0
 	m.keys.DeleteSnippet.SetEnabled(hasItems)
 	m.keys.CopySnippet.SetEnabled(hasItems)
 	m.keys.EditSnippet.SetEnabled(hasItems)
@@ -263,7 +270,7 @@ func (m *Model) updateKeyMap() {
 func (m *Model) activeSnippet() Snippet {
 	item := m.List.SelectedItem()
 	if item == nil {
-		return Snippet{Title: "No Snippets"}
+		return Snippet{Title: "No Snippets", Folder: defaultFolder}
 	}
 	return item.(Snippet)
 }
@@ -280,7 +287,10 @@ func (m *Model) View() string {
 			m.FoldersStyle.Base.Render(m.Folders.View()),
 			m.ListStyle.Base.Render(m.List.View()),
 			lipgloss.JoinVertical(lipgloss.Top,
-				m.ContentStyle.Title.Render(m.activeSnippet().Title),
+				lipgloss.JoinHorizontal(lipgloss.Left,
+					m.ContentStyle.Title.Render(m.activeSnippet().Folder),
+					m.ContentStyle.Separator.Render("/"),
+					m.ContentStyle.Title.Render(m.activeSnippet().Title)),
 				lipgloss.JoinHorizontal(lipgloss.Left,
 					m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
 					m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))),

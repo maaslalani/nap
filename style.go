@@ -53,6 +53,7 @@ type FoldersBaseStyle struct {
 type ContentBaseStyle struct {
 	Base       lipgloss.Style
 	Title      lipgloss.Style
+	Separator  lipgloss.Style
 	LineNumber lipgloss.Style
 }
 
@@ -104,11 +105,13 @@ var DefaultStyles = Styles{
 		Focused: ContentBaseStyle{
 			Base:       lipgloss.NewStyle().Margin(0, 1),
 			Title:      lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
+			Separator:  lipgloss.NewStyle().Foreground(white).Margin(0, 0, 0, 1),
 			LineNumber: lipgloss.NewStyle().Foreground(brightBlack),
 		},
 		Blurred: ContentBaseStyle{
 			Base:       lipgloss.NewStyle().Margin(0, 1),
 			Title:      lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
+			Separator:  lipgloss.NewStyle().Foreground(black).Margin(0, 0, 0, 1),
 			LineNumber: lipgloss.NewStyle().Foreground(black),
 		},
 	},
