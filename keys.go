@@ -29,8 +29,8 @@ var DefaultKeyMap = KeyMap{
 	CopySnippet:   key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
 	Cancel:        key.NewBinding(key.WithKeys("N"), key.WithHelp("N", "cancel")),
-	NextPane:      key.NewBinding(key.WithKeys("tab", "l"), key.WithHelp("tab", "navigate")),
-	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab", "h"), key.WithHelp("shift+tab", "navigate")),
+	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "navigate")),
+	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "navigate")),
 }
 
 // ShortHelp returns a quick help menu.

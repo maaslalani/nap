@@ -282,9 +282,11 @@ func (m *Model) resetTitleBar() {
 
 func (m *Model) updateKeyMap() {
 	hasItems := len(m.List.VisibleItems()) > 0
-	m.keys.DeleteSnippet.SetEnabled(hasItems)
-	m.keys.CopySnippet.SetEnabled(hasItems)
-	m.keys.EditSnippet.SetEnabled(hasItems)
+	isFiltering := m.List.FilterState() == list.Filtering
+	m.keys.DeleteSnippet.SetEnabled(hasItems && !isFiltering)
+	m.keys.CopySnippet.SetEnabled(hasItems && !isFiltering)
+	m.keys.EditSnippet.SetEnabled(hasItems && !isFiltering)
+	m.keys.NewSnippet.SetEnabled(!isFiltering)
 }
 
 func (m *Model) activeSnippet() Snippet {

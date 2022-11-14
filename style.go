@@ -4,7 +4,6 @@ import "github.com/charmbracelet/lipgloss"
 
 const primaryColor = lipgloss.Color("#B294BB")
 const primaryColorSubdued = lipgloss.Color("#85678F")
-const secondaryColor = lipgloss.Color("63")
 
 const brightGreen = lipgloss.Color("#B5BD68")
 const green = lipgloss.Color("#8C9440")
@@ -118,7 +117,7 @@ var DefaultStyles = Styles{
 			Separator:    lipgloss.NewStyle().Foreground(black).Margin(0, 0, 0, 1),
 			LineNumber:   lipgloss.NewStyle().Foreground(black),
 			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
-			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColorSubdued),
+			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColor),
 		},
 	},
 }
