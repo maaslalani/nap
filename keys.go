@@ -8,11 +8,14 @@ type KeyMap struct {
 	Search        key.Binding
 	ToggleHelp    key.Binding
 	NewSnippet    key.Binding
-	RenameSnippet key.Binding
 	DeleteSnippet key.Binding
 	EditSnippet   key.Binding
 	CopySnippet   key.Binding
 	PasteSnippet  key.Binding
+	SetFolder     key.Binding
+	RenameSnippet key.Binding
+	TagSnippet    key.Binding
+	SetLanguage   key.Binding
 	Confirm       key.Binding
 	Cancel        key.Binding
 	NextPane      key.Binding
@@ -28,7 +31,11 @@ var DefaultKeyMap = KeyMap{
 	DeleteSnippet: key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "delete")),
 	EditSnippet:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
 	CopySnippet:   key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy")),
-	PasteSnippet:  key.NewBinding(key.WithKeys("v"), key.WithHelp("v", "paste")),
+	PasteSnippet:  key.NewBinding(key.WithKeys("p"), key.WithHelp("p", "paste")),
+	RenameSnippet: key.NewBinding(key.WithKeys("r"), key.WithHelp("r", "rename")),
+	SetFolder:     key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "move")),
+	SetLanguage:   key.NewBinding(key.WithKeys("l"), key.WithHelp("l", "language")),
+	TagSnippet:    key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tag")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
 	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
 	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "navigate")),
@@ -43,7 +50,6 @@ func (k KeyMap) ShortHelp() []key.Binding {
 		k.EditSnippet,
 		k.DeleteSnippet,
 		k.CopySnippet,
-		k.PasteSnippet,
 		k.NewSnippet,
 	}
 }

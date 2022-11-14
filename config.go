@@ -11,8 +11,9 @@ import (
 // At the moment, it is quite limited, only supporting the home folder and the
 // file name of the metadata.
 type Config struct {
-	Home string `env:"SNOOZE_HOME"`
-	File string `env:"SNOOZE_FILE" envDefault:"snippets.json"`
+	Home            string `env:"SNOOZE_HOME"`
+	File            string `env:"SNOOZE_FILE" envDefault:"snippets.json"`
+	DefaultLanguage string `env:"SNOOZE_DEFAULT_LANGUAGE" envDefault:"go"`
 }
 
 // default helpers for the configuration.

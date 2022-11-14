@@ -9,13 +9,14 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"golang.org/x/exp/maps"
 )
 
-var defaultSnippetFileContent = fmt.Sprintf(`[ { "folder": "%s", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`, defaultFolder)
+var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "%s" } ]`
 
 func main() {
 	config := Config{Home: defaultHome()}
@@ -36,8 +37,9 @@ func main() {
 		if err != nil {
 			fmt.Printf("Unable to create file %s, %+v", file, err)
 		}
-		_, _ = f.WriteString(defaultSnippetFileContent)
-		dir = []byte(defaultSnippetFileContent)
+		content := fmt.Sprintf(defaultSnippetFileFormat, defaultFolder, config.DefaultLanguage)
+		_, _ = f.WriteString(content)
+		dir = []byte(content)
 	}
 	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
@@ -82,15 +84,19 @@ func main() {
 	content := viewport.New(80, 0)
 
 	m := &Model{
-		List:         snippetList,
-		Folders:      folderList,
-		Code:         content,
-		ContentStyle: DefaultStyles.Content.Blurred,
-		ListStyle:    DefaultStyles.Snippets.Focused,
-		FoldersStyle: DefaultStyles.Folders.Blurred,
-		keys:         DefaultKeyMap,
-		help:         help.New(),
-		config:       config,
+		List:          snippetList,
+		Folders:       folderList,
+		Code:          content,
+		ContentStyle:  DefaultStyles.Content.Blurred,
+		ListStyle:     DefaultStyles.Snippets.Focused,
+		FoldersStyle:  DefaultStyles.Folders.Blurred,
+		keys:          DefaultKeyMap,
+		help:          help.New(),
+		config:        config,
+		folderInput:   newTextInput(),
+		titleInput:    newTextInput(),
+		languageInput: newTextInput(),
+		tagsInput:     newTextInput(),
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	model, err := p.Run()
@@ -115,4 +121,13 @@ func main() {
 		fmt.Println("Could not save snippets file.", err)
 		return
 	}
+}
+
+func newTextInput() textinput.Model {
+	i := textinput.New()
+	i.Prompt = ""
+	i.PromptStyle = lipgloss.NewStyle().Margin(0, 1)
+	i.TextStyle = lipgloss.NewStyle().MarginBottom(1)
+	i.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
+	return i
 }

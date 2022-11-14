@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -34,6 +35,8 @@ const (
 	CreatingState
 	CopyingState
 	QuittingState
+	EditingState
+	EditingTagsState
 )
 
 // Model represents the state of the application.
@@ -58,6 +61,11 @@ type Model struct {
 	// the viewport of the Code snippet.
 	Code        viewport.Model
 	LineNumbers viewport.Model
+	// the input for snippet name and folder
+	folderInput   textinput.Model
+	titleInput    textinput.Model
+	languageInput textinput.Model
+	tagsInput     textinput.Model
 	// the current active pane of focus.
 	Pane int
 	// the current state / action of the application.
@@ -126,6 +134,31 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.resetTitleBar()
 			m.State = NavigatingState
 			break
+		} else if m.State == EditingState {
+			if msg.String() == "esc" || msg.String() == "enter" {
+				m.State = NavigatingState
+				m.folderInput.Blur()
+				m.titleInput.Blur()
+				m.languageInput.Blur()
+				i := m.List.Index()
+				snippet := m.List.SelectedItem().(Snippet)
+				m.List.RemoveItem(i)
+				snippet.Title = m.titleInput.Value()
+				snippet.Folder = m.folderInput.Value()
+				snippet.Language = m.languageInput.Value()
+				m.List.InsertItem(i, snippet)
+				m.Pane = SnippetPane
+				m.updateActivePane(msg)
+			}
+			var cmd tea.Cmd
+			var cmds []tea.Cmd
+			m.folderInput, cmd = m.folderInput.Update(msg)
+			cmds = append(cmds, cmd)
+			m.titleInput, cmd = m.titleInput.Update(msg)
+			cmds = append(cmds, cmd)
+			m.languageInput, cmd = m.languageInput.Update(msg)
+			cmds = append(cmds, cmd)
+			return m, tea.Batch(cmds...)
 		}
 		switch {
 		case key.Matches(msg, m.keys.NextPane):
@@ -142,9 +175,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if folderItem != nil && folderItem.FilterValue() != "" {
 				folder = folderItem.FilterValue()
 			}
-			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
+			file := fmt.Sprintf("snooze-%d.txt", rand.Intn(1000000))
 			_, _ = os.Create(filepath.Join(m.config.Home, folder, file))
-			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
+			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: m.config.DefaultLanguage, Tags: []string{}, Folder: folder})
 		case key.Matches(msg, m.keys.PasteSnippet):
 			content, err := clipboard.ReadAll()
 			if err != nil {
@@ -154,7 +187,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, nil
 			}
-			f.WriteString(content + "\n")
+			f.WriteString(content)
+		case key.Matches(msg, m.keys.RenameSnippet):
+			m.State = EditingState
+			m.Pane = ContentPane
+			snippet := m.selectedSnippet()
+			m.folderInput.SetValue(snippet.Folder)
+			m.titleInput.SetValue(snippet.Title)
+			m.languageInput.SetValue(snippet.Language)
+			m.updateKeyMap()
+			m.updateActivePane(msg)
+			m.folderInput.Blur()
+			m.languageInput.Blur()
+			return m, m.titleInput.Focus()
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
 			content, err := os.ReadFile(m.selectedSnippetFilePath())
@@ -219,23 +264,36 @@ func (m *Model) editSnippet() tea.Cmd {
 	})
 }
 
+func (m *Model) noContentHints() []keyHint {
+	return []keyHint{
+		{m.keys.EditSnippet, "edit contents"},
+		{m.keys.PasteSnippet, "paste clipboard"},
+		{m.keys.RenameSnippet, "rename"},
+		{m.keys.SetFolder, "set folder"},
+		{m.keys.SetLanguage, "set language"},
+		{m.keys.TagSnippet, "set tags"},
+	}
+}
+
 // updateContentView updates the content view with the correct content based on
 // the active snippet or display the appropriate error message / hint message.
 func (m *Model) updateContentView(msg updateViewMsg) (tea.Model, tea.Cmd) {
 	if len(m.List.Items()) <= 0 {
-		m.displayKeyHint("No Snippets.", []keyHint{{"Press", "to create a a new snippet.", "n"}})
+		m.displayKeyHint([]keyHint{
+			{m.keys.NewSnippet, "create a new snippet."},
+		})
 		return m, nil
 	}
 
 	var b bytes.Buffer
 	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.Folder, msg.File))
 	if err != nil {
-		m.displayKeyHint("No Content.", []keyHint{{"Press", "to edit snippet.", "e"}, {"Press", "to paste from clipboard.", "v"}})
+		m.displayKeyHint(m.noContentHints())
 		return m, nil
 	}
 
 	if string(content) == "" {
-		m.displayKeyHint("No Content.", []keyHint{{"Press", "to edit snippet.", "e"}, {"Press", "to paste from clipboard.", "v"}})
+		m.displayKeyHint(m.noContentHints())
 		return m, nil
 	}
 
@@ -252,28 +310,22 @@ func (m *Model) updateContentView(msg updateViewMsg) (tea.Model, tea.Cmd) {
 }
 
 type keyHint struct {
-	prefix string
-	suffix string
-	key    string
+	binding key.Binding
+	help    string
 }
 
 // displayKeyHint updates the content viewport with instructions on the
 // relevent key binding that the user should most likely press.
-func (m *Model) displayKeyHint(title string, hints []keyHint) {
-	m.LineNumbers.SetContent(" ~ \n ~ ")
-
+func (m *Model) displayKeyHint(hints []keyHint) {
+	m.LineNumbers.SetContent(strings.Repeat(" ~ \n", len(hints)))
 	var s strings.Builder
-	s.WriteString(m.ContentStyle.EmptyHint.Render(title) + "\n")
-
 	for _, hint := range hints {
 		s.WriteString(
-			fmt.Sprintf("%s %s %s\n",
-				m.ContentStyle.EmptyHint.Render("* "+hint.prefix),
-				m.ContentStyle.EmptyHintKey.Render(hint.key),
-				m.ContentStyle.EmptyHint.Render(hint.suffix),
+			fmt.Sprintf("%s %s\n",
+				m.ContentStyle.EmptyHintKey.Render(hint.binding.Help().Key),
+				m.ContentStyle.EmptyHint.Render("• "+hint.help),
 			))
 	}
-
 	m.Code.SetContent(s.String())
 }
 
@@ -344,11 +396,12 @@ func (m *Model) resetTitleBar() {
 func (m *Model) updateKeyMap() {
 	hasItems := len(m.List.VisibleItems()) > 0
 	isFiltering := m.List.FilterState() == list.Filtering
-	m.keys.DeleteSnippet.SetEnabled(hasItems && !isFiltering)
-	m.keys.CopySnippet.SetEnabled(hasItems && !isFiltering)
-	m.keys.PasteSnippet.SetEnabled(hasItems && !isFiltering)
-	m.keys.EditSnippet.SetEnabled(hasItems && !isFiltering)
-	m.keys.NewSnippet.SetEnabled(!isFiltering)
+	isEditing := m.State == EditingState
+	m.keys.DeleteSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
+	m.keys.CopySnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
+	m.keys.PasteSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
+	m.keys.EditSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
+	m.keys.NewSnippet.SetEnabled(!isFiltering && !isEditing)
 }
 
 // selectedSnippet returns the currently selected snippet.
@@ -365,6 +418,19 @@ func (m *Model) View() string {
 	if m.State == QuittingState {
 		return ""
 	}
+
+	var (
+		folder   = m.ContentStyle.Title.Render(m.selectedSnippet().Folder)
+		name     = m.ContentStyle.Title.Render(m.selectedSnippet().Title)
+		language = m.ContentStyle.Title.Render(m.selectedSnippet().Language)
+	)
+
+	if m.State == EditingState {
+		folder = m.folderInput.View()
+		name = m.titleInput.View()
+		language = m.languageInput.View()
+	}
+
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		lipgloss.JoinHorizontal(
@@ -373,9 +439,12 @@ func (m *Model) View() string {
 			m.ListStyle.Base.Render(m.List.View()),
 			lipgloss.JoinVertical(lipgloss.Top,
 				lipgloss.JoinHorizontal(lipgloss.Left,
-					m.ContentStyle.Title.Render(m.selectedSnippet().Folder),
+					folder,
 					m.ContentStyle.Separator.Render("/"),
-					m.ContentStyle.Title.Render(m.selectedSnippet().Title)),
+					name,
+					m.ContentStyle.Separator.Render("."),
+					language,
+				),
 				lipgloss.JoinHorizontal(lipgloss.Left,
 					m.ContentStyle.LineNumber.Render(m.LineNumbers.View()),
 					m.ContentStyle.Base.Render(strings.ReplaceAll(m.Code.View(), "\t", strings.Repeat(" ", tabSpaces))),

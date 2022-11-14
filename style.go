@@ -138,7 +138,7 @@ var DefaultStyles = Styles{
 		Blurred: ContentBaseStyle{
 			Base:         lipgloss.NewStyle().Margin(0, 1),
 			Title:        lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
-			Separator:    lipgloss.NewStyle().Foreground(black).Margin(0, 0, 0, 1),
+			Separator:    lipgloss.NewStyle().Foreground(gray).Margin(0, 0, 0, 1),
 			LineNumber:   lipgloss.NewStyle().Foreground(black),
 			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
 			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColor),
