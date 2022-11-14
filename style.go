@@ -2,19 +2,19 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-const primaryColor = lipgloss.Color("#67ecff")
-const primaryColorSubdued = lipgloss.Color("#439dab")
+const primaryColor = lipgloss.Color("#B294BB")
+const primaryColorSubdued = lipgloss.Color("#85678F")
 const secondaryColor = lipgloss.Color("63")
 
-const brightGreen = lipgloss.Color("34")
-const green = lipgloss.Color("29")
+const brightGreen = lipgloss.Color("#B5BD68")
+const green = lipgloss.Color("#8C9440")
 
-const brightRed = lipgloss.Color("#f11635")
-const red = lipgloss.Color("#d62c45")
+const brightRed = lipgloss.Color("#CC6666")
+const red = lipgloss.Color("#954D4D")
 
 const gray = lipgloss.Color("240")
-const black = lipgloss.Color("0")
-const brightBlack = lipgloss.Color("237")
+const black = lipgloss.Color("#282A2E")
+const brightBlack = lipgloss.Color("#373B41")
 const white = lipgloss.Color("#FFF")
 
 type SnippetsStyle struct {
@@ -51,10 +51,12 @@ type FoldersBaseStyle struct {
 }
 
 type ContentBaseStyle struct {
-	Base       lipgloss.Style
-	Title      lipgloss.Style
-	Separator  lipgloss.Style
-	LineNumber lipgloss.Style
+	Base         lipgloss.Style
+	Title        lipgloss.Style
+	Separator    lipgloss.Style
+	LineNumber   lipgloss.Style
+	EmptyHint    lipgloss.Style
+	EmptyHintKey lipgloss.Style
 }
 
 // Styles is the struct of all styles for the application.
@@ -103,16 +105,20 @@ var DefaultStyles = Styles{
 	},
 	Content: ContentStyle{
 		Focused: ContentBaseStyle{
-			Base:       lipgloss.NewStyle().Margin(0, 1),
-			Title:      lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
-			Separator:  lipgloss.NewStyle().Foreground(white).Margin(0, 0, 0, 1),
-			LineNumber: lipgloss.NewStyle().Foreground(brightBlack),
+			Base:         lipgloss.NewStyle().Margin(0, 1),
+			Title:        lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
+			Separator:    lipgloss.NewStyle().Foreground(white).Margin(0, 0, 0, 1),
+			LineNumber:   lipgloss.NewStyle().Foreground(brightBlack),
+			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
+			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColor),
 		},
 		Blurred: ContentBaseStyle{
-			Base:       lipgloss.NewStyle().Margin(0, 1),
-			Title:      lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
-			Separator:  lipgloss.NewStyle().Foreground(black).Margin(0, 0, 0, 1),
-			LineNumber: lipgloss.NewStyle().Foreground(black),
+			Base:         lipgloss.NewStyle().Margin(0, 1),
+			Title:        lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
+			Separator:    lipgloss.NewStyle().Foreground(black).Margin(0, 0, 0, 1),
+			LineNumber:   lipgloss.NewStyle().Foreground(black),
+			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
+			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColorSubdued),
 		},
 	},
 }

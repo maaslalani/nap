@@ -17,15 +17,3 @@ type Snippet struct {
 	File     string    `json:"file"`
 	Language string    `json:"language"`
 }
-
-const untitledSnippet = `package main
-
-import "fmt"
-
-// Untitled Snippet
-
-func main() {
-	fmt.Println("Press 'e' to edit this snippet.")
-	fmt.Println("Press 'r' to rename this snippet.")
-}
-`

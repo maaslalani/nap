@@ -75,6 +75,7 @@ func (m *Model) Init() tea.Cmd {
 	m.List.Styles.Title = m.ListStyle.Title
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
+	m.updateKeyMap()
 	return func() tea.Msg {
 		return updateViewMsg(m.activeSnippet())
 	}
@@ -89,8 +90,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
 		if len(m.List.Items()) <= 0 {
-			m.LineNumbers.SetContent(" ~ ")
-			m.Code.SetContent("press \x1b[36mn\x1b[0m to create a new snippet.")
+			m.LineNumbers.SetContent(" ~ \n ~ ")
+			m.Code.SetContent(fmt.Sprintf("%s\n%s %s %s",
+				m.ContentStyle.EmptyHint.Render("No snippets."),
+				m.ContentStyle.EmptyHint.Render("Press"),
+				m.ContentStyle.EmptyHintKey.Render("n"),
+				m.ContentStyle.EmptyHint.Render("to create a new snippet."),
+			))
 			return m, nil
 		}
 
@@ -99,6 +105,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if err != nil {
 			m.LineNumbers.SetContent(" ~ ")
 			m.Code.SetContent(b.String() + "Error: unable to read file.")
+			return m, nil
+		}
+		if string(content) == "" {
+			m.LineNumbers.SetContent(" ~ \n ~ ")
+			m.Code.SetContent(fmt.Sprintf("%s %s %s",
+				m.ContentStyle.EmptyHint.Render("Press"),
+				m.ContentStyle.EmptyHintKey.Render("e"),
+				m.ContentStyle.EmptyHint.Render("to edit snippet."),
+			))
 			return m, nil
 		}
 		err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
@@ -143,6 +158,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.State = NavigatingState
 			}
 			return m, nil
+		} else if m.State == CopyingState {
+			m.resetTitleBar()
+			m.State = NavigatingState
+			break
 		}
 		switch {
 		case key.Matches(msg, m.keys.NextPane):
@@ -160,8 +179,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				folder = folderItem.FilterValue()
 			}
 			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
-			f, _ := os.Create(filepath.Join(m.config.Home, folder, file))
-			f.WriteString(untitledSnippet)
+			_, _ = os.Create(filepath.Join(m.config.Home, folder, file))
 			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
@@ -175,7 +193,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ListStyle.SelectedTitle.Foreground(brightGreen)
 			m.ListStyle.SelectedSubtitle.Foreground(green)
 			return m, tea.Tick(time.Second, func(t time.Time) tea.Msg {
-				m.resetTitleBar()
+				if m.State == CopyingState {
+					m.resetTitleBar()
+				}
 				return tea.KeyMsg{}
 			})
 		case key.Matches(msg, m.keys.DeleteSnippet):
