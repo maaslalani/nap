@@ -84,19 +84,17 @@ func main() {
 	content := viewport.New(80, 0)
 
 	m := &Model{
-		List:          snippetList,
-		Folders:       folderList,
-		Code:          content,
-		ContentStyle:  DefaultStyles.Content.Blurred,
-		ListStyle:     DefaultStyles.Snippets.Focused,
-		FoldersStyle:  DefaultStyles.Folders.Blurred,
-		keys:          DefaultKeyMap,
-		help:          help.New(),
-		config:        config,
-		folderInput:   newTextInput(),
-		titleInput:    newTextInput(),
-		languageInput: newTextInput(),
-		tagsInput:     newTextInput(),
+		List:         snippetList,
+		Folders:      folderList,
+		Code:         content,
+		ContentStyle: DefaultStyles.Content.Blurred,
+		ListStyle:    DefaultStyles.Snippets.Focused,
+		FoldersStyle: DefaultStyles.Folders.Blurred,
+		keys:         DefaultKeyMap,
+		help:         help.New(),
+		config:       config,
+		inputs:       []textinput.Model{newTextInput(), newTextInput(), newTextInput()},
+		tagsInput:    newTextInput(),
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	model, err := p.Run()

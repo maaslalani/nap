@@ -44,6 +44,14 @@ const (
 	editingTagsState
 )
 
+type input int
+
+const (
+	folderInput input = iota
+	nameInput
+	languageInput
+)
+
 // Model represents the state of the application.
 // It contains all the snippets organized in folders.
 type Model struct {
@@ -66,11 +74,9 @@ type Model struct {
 	// the viewport of the Code snippet.
 	Code        viewport.Model
 	LineNumbers viewport.Model
-	// the input for snippet name and folder
-	folderInput   textinput.Model
-	titleInput    textinput.Model
-	languageInput textinput.Model
-	tagsInput     textinput.Model
+	// the input for snippet folder, name, language
+	inputs    []textinput.Model
+	tagsInput textinput.Model
 	// the current active pane of focus.
 	pane pane
 	// the current state / action of the application.
@@ -148,24 +154,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if wasEditing {
-				m.folderInput.Blur()
-				m.titleInput.Blur()
-				m.languageInput.Blur()
+				m.blurInputs()
 				i := m.List.Index()
 				snippet := m.List.SelectedItem().(Snippet)
 				m.List.RemoveItem(i)
-				if m.titleInput.Value() != "" {
-					snippet.Name = m.titleInput.Value()
+				if m.inputs[nameInput].Value() != "" {
+					snippet.Name = m.inputs[nameInput].Value()
 				} else {
 					snippet.Name = defaultSnippetName
 				}
-				if m.folderInput.Value() != "" {
-					snippet.Folder = m.folderInput.Value()
+				if m.inputs[folderInput].Value() != "" {
+					snippet.Folder = m.inputs[folderInput].Value()
 				} else {
 					snippet.Folder = defaultSnippetFolder
 				}
-				snippet.Language = m.languageInput.Value()
+				snippet.Language = m.inputs[languageInput].Value()
 				m.List.InsertItem(i, snippet)
+				m.pane = snippetPane
 			}
 		case pastingState:
 			content, err := clipboard.ReadAll()
@@ -182,20 +187,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case editingState:
 			m.pane = contentPane
 			snippet := m.selectedSnippet()
-			m.folderInput.SetValue(snippet.Folder)
+			m.inputs[folderInput].SetValue(snippet.Folder)
 			if snippet.Name == defaultSnippetName {
-				m.titleInput.SetValue("")
+				m.inputs[nameInput].SetValue("")
 				// We add a space at the end because the cursor for the placeholder will be at
 				// the beginning and we need to add some margin at the end.
-				m.titleInput.Placeholder = defaultSnippetName + " "
+				m.inputs[nameInput].Placeholder = defaultSnippetName + " "
 			} else {
-				m.titleInput.SetValue(snippet.Name)
+				m.inputs[nameInput].SetValue(snippet.Name)
 			}
-			m.languageInput.SetValue(snippet.Language)
-			m.folderInput.Blur()
-			m.languageInput.Blur()
-			m.titleInput.CursorEnd()
-			cmd = m.titleInput.Focus()
+			m.inputs[languageInput].SetValue(snippet.Language)
+			cmd = m.focusInput(nameInput)
 		case creatingState:
 		case copyingState:
 			m.pane = snippetPane
@@ -204,7 +206,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.List.Title = "Copied " + m.selectedSnippet().Name + "!"
 			m.ListStyle.SelectedTitle.Foreground(brightGreen)
 			m.ListStyle.SelectedSubtitle.Foreground(green)
-			return m, tea.Tick(time.Second, func(time.Time) tea.Msg { return changeStateMsg{navigatingState} })
+			cmd = tea.Tick(time.Second, func(time.Time) tea.Msg { return changeStateMsg{navigatingState} })
 		}
 
 		m.updateKeyMap()
@@ -252,12 +254,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			var cmd tea.Cmd
 			var cmds []tea.Cmd
-			m.folderInput, cmd = m.folderInput.Update(msg)
-			cmds = append(cmds, cmd)
-			m.titleInput, cmd = m.titleInput.Update(msg)
-			cmds = append(cmds, cmd)
-			m.languageInput, cmd = m.languageInput.Update(msg)
-			cmds = append(cmds, cmd)
+			for i := range m.inputs {
+				m.inputs[i], cmd = m.inputs[i].Update(msg)
+				cmds = append(cmds, cmd)
+			}
 			return m, tea.Batch(cmds...)
 		}
 
@@ -311,6 +311,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.updateKeyMap()
 	cmd := m.updateActivePane(msg)
 	return m, cmd
+}
+
+func (m *Model) blurInputs() {
+	for i := range m.inputs {
+		m.inputs[i].Blur()
+	}
+}
+
+func (m *Model) focusInput(i input) tea.Cmd {
+	m.blurInputs()
+	m.inputs[i].CursorEnd()
+	return m.inputs[i].Focus()
 }
 
 func (m *Model) selectedSnippetFilePath() string {
@@ -506,9 +518,9 @@ func (m *Model) View() string {
 	)
 
 	if m.State == editingState {
-		folder = m.folderInput.View()
-		name = m.titleInput.View()
-		language = m.languageInput.View()
+		folder = m.inputs[folderInput].View()
+		name = m.inputs[nameInput].View()
+		language = m.inputs[languageInput].View()
 	}
 
 	return lipgloss.JoinVertical(
