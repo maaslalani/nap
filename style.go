@@ -7,17 +7,24 @@ import "github.com/charmbracelet/lipgloss"
 const primaryColor = lipgloss.Color("#B294BB")
 const primaryColorSubdued = lipgloss.Color("#85678F")
 
-// helpful colors for certain parts of the application.
-const black = lipgloss.Color("#282A2E")
-const brightBlack = lipgloss.Color("#373B41")
-const brightGreen = lipgloss.Color("#B5BD68")
-const brightRed = lipgloss.Color("#CC6666")
-const brightYellow = lipgloss.Color("#F0C674")
-const yellow = lipgloss.Color("#DE935F")
+// colors for the application.
 const gray = lipgloss.Color("240")
-const green = lipgloss.Color("#8C9440")
-const red = lipgloss.Color("#954D4D")
-const white = lipgloss.Color("#FFF")
+const black = lipgloss.Color("#282a2e")
+const red = lipgloss.Color("#a54242")
+const green = lipgloss.Color("#8c9440")
+const yellow = lipgloss.Color("#de935f")
+const blue = lipgloss.Color("#5f819d")
+const magenta = lipgloss.Color("#85678f")
+const cyan = lipgloss.Color("#5e8d87")
+const white = lipgloss.Color("#fff")
+const brightBlack = lipgloss.Color("#373b41")
+const brightRed = lipgloss.Color("#954d4d")
+const brightGreen = lipgloss.Color("#b5bd68")
+const brightYellow = lipgloss.Color("#f0c674")
+const brightBlue = lipgloss.Color("#81a2be")
+const brightMagenta = lipgloss.Color("#b294bb")
+const brightCyan = lipgloss.Color("#8abeb7")
+const brightWhite = lipgloss.Color("#c5c8c6")
 
 // SnippetsStyle is the style struct to handle the focusing and blurring of the
 // snippets pane in the application.
