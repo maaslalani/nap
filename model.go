@@ -70,11 +70,15 @@ type Model struct {
 
 // Init initialzes the application model.
 func (m *Model) Init() tea.Cmd {
-	m.List.Styles.TitleBar = m.ListStyle.TitleBar
-	m.List.Styles.Title = m.ListStyle.Title
-	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
+	rand.Seed(time.Now().Unix())
+
 	m.Folders.Styles.Title = m.FoldersStyle.Title
+	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
+	m.List.Styles.Title = m.ListStyle.Title
+	m.List.Styles.TitleBar = m.ListStyle.TitleBar
+
 	m.updateKeyMap()
+
 	return func() tea.Msg {
 		return updateViewMsg(m.selectedSnippet())
 	}
@@ -138,10 +142,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if folderItem != nil && folderItem.FilterValue() != "" {
 				folder = folderItem.FilterValue()
 			}
-			rand.Seed(time.Now().Unix())
 			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
 			_, _ = os.Create(filepath.Join(m.config.Home, folder, file))
 			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
+		case key.Matches(msg, m.keys.PasteSnippet):
+			content, err := clipboard.ReadAll()
+			if err != nil {
+				return m, nil
+			}
+			f, err := os.OpenFile(m.selectedSnippetFilePath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				return m, nil
+			}
+			f.WriteString(content + "\n")
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
 			content, err := os.ReadFile(m.selectedSnippetFilePath())
@@ -210,19 +223,19 @@ func (m *Model) editSnippet() tea.Cmd {
 // the active snippet or display the appropriate error message / hint message.
 func (m *Model) updateContentView(msg updateViewMsg) (tea.Model, tea.Cmd) {
 	if len(m.List.Items()) <= 0 {
-		m.displayKeyHint("No Snippets.", "Press", "n", "to create a new snippet.")
+		m.displayKeyHint("No Snippets.", []keyHint{{"Press", "to create a a new snippet.", "n"}})
 		return m, nil
 	}
 
 	var b bytes.Buffer
 	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.Folder, msg.File))
 	if err != nil {
-		m.displayKeyHint("No Content.", "Press", "e", "to edit snippet.")
+		m.displayKeyHint("No Content.", []keyHint{{"Press", "to edit snippet.", "e"}, {"Press", "to paste from clipboard.", "v"}})
 		return m, nil
 	}
 
 	if string(content) == "" {
-		m.displayKeyHint("No Content.", "Press", "e", "to edit snippet.")
+		m.displayKeyHint("No Content.", []keyHint{{"Press", "to edit snippet.", "e"}, {"Press", "to paste from clipboard.", "v"}})
 		return m, nil
 	}
 
@@ -238,16 +251,30 @@ func (m *Model) updateContentView(msg updateViewMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+type keyHint struct {
+	prefix string
+	suffix string
+	key    string
+}
+
 // displayKeyHint updates the content viewport with instructions on the
 // relevent key binding that the user should most likely press.
-func (m *Model) displayKeyHint(title, prefix, key, suffix string) {
+func (m *Model) displayKeyHint(title string, hints []keyHint) {
 	m.LineNumbers.SetContent(" ~ \n ~ ")
-	m.Code.SetContent(fmt.Sprintf("%s\n%s %s %s",
-		m.ContentStyle.EmptyHint.Render(title),
-		m.ContentStyle.EmptyHint.Render(prefix),
-		m.ContentStyle.EmptyHintKey.Render(key),
-		m.ContentStyle.EmptyHint.Render(suffix),
-	))
+
+	var s strings.Builder
+	s.WriteString(m.ContentStyle.EmptyHint.Render(title) + "\n")
+
+	for _, hint := range hints {
+		s.WriteString(
+			fmt.Sprintf("%s %s %s\n",
+				m.ContentStyle.EmptyHint.Render("* "+hint.prefix),
+				m.ContentStyle.EmptyHintKey.Render(hint.key),
+				m.ContentStyle.EmptyHint.Render(hint.suffix),
+			))
+	}
+
+	m.Code.SetContent(s.String())
 }
 
 // displayError updates the content viewport with the error message provided.
@@ -319,6 +346,7 @@ func (m *Model) updateKeyMap() {
 	isFiltering := m.List.FilterState() == list.Filtering
 	m.keys.DeleteSnippet.SetEnabled(hasItems && !isFiltering)
 	m.keys.CopySnippet.SetEnabled(hasItems && !isFiltering)
+	m.keys.PasteSnippet.SetEnabled(hasItems && !isFiltering)
 	m.keys.EditSnippet.SetEnabled(hasItems && !isFiltering)
 	m.keys.NewSnippet.SetEnabled(!isFiltering)
 }

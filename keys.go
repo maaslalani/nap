@@ -12,6 +12,7 @@ type KeyMap struct {
 	DeleteSnippet key.Binding
 	EditSnippet   key.Binding
 	CopySnippet   key.Binding
+	PasteSnippet  key.Binding
 	Confirm       key.Binding
 	Cancel        key.Binding
 	NextPane      key.Binding
@@ -27,6 +28,7 @@ var DefaultKeyMap = KeyMap{
 	DeleteSnippet: key.NewBinding(key.WithKeys("x"), key.WithHelp("x", "delete")),
 	EditSnippet:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
 	CopySnippet:   key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy")),
+	PasteSnippet:  key.NewBinding(key.WithKeys("v"), key.WithHelp("v", "paste")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
 	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
 	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "navigate")),
@@ -41,6 +43,7 @@ func (k KeyMap) ShortHelp() []key.Binding {
 		k.EditSnippet,
 		k.DeleteSnippet,
 		k.CopySnippet,
+		k.PasteSnippet,
 		k.NewSnippet,
 	}
 }
@@ -49,7 +52,8 @@ func (k KeyMap) ShortHelp() []key.Binding {
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.NextPane, k.PreviousPane},
-		{k.NextPane, k.PreviousPane},
-		{k.NextPane, k.PreviousPane},
+		{k.Search},
+		{k.EditSnippet, k.DeleteSnippet, k.NewSnippet},
+		{k.CopySnippet, k.PasteSnippet},
 	}
 }
