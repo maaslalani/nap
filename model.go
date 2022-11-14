@@ -75,8 +75,9 @@ type Model struct {
 	Code        viewport.Model
 	LineNumbers viewport.Model
 	// the input for snippet folder, name, language
-	inputs    []textinput.Model
-	tagsInput textinput.Model
+	activeInput input
+	inputs      []textinput.Model
+	tagsInput   textinput.Model
 	// the current active pane of focus.
 	pane pane
 	// the current state / action of the application.
@@ -190,14 +191,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.inputs[folderInput].SetValue(snippet.Folder)
 			if snippet.Name == defaultSnippetName {
 				m.inputs[nameInput].SetValue("")
-				// We add a space at the end because the cursor for the placeholder will be at
-				// the beginning and we need to add some margin at the end.
-				m.inputs[nameInput].Placeholder = defaultSnippetName + " "
 			} else {
 				m.inputs[nameInput].SetValue(snippet.Name)
 			}
 			m.inputs[languageInput].SetValue(snippet.Language)
-			cmd = m.focusInput(nameInput)
+			cmd = m.focusInput(m.activeInput)
 		case creatingState:
 		case copyingState:
 			m.pane = snippetPane
@@ -285,6 +283,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PasteSnippet):
 			return m, changeState(pastingState)
 		case key.Matches(msg, m.keys.RenameSnippet):
+			m.activeInput = nameInput
+			return m, changeState(editingState)
+		case key.Matches(msg, m.keys.SetFolder):
+			m.activeInput = folderInput
+			return m, changeState(editingState)
+		case key.Matches(msg, m.keys.SetLanguage):
+			m.activeInput = languageInput
 			return m, changeState(editingState)
 		case key.Matches(msg, m.keys.CopySnippet):
 			return m, func() tea.Msg {

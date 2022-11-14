@@ -93,8 +93,12 @@ func main() {
 		keys:         DefaultKeyMap,
 		help:         help.New(),
 		config:       config,
-		inputs:       []textinput.Model{newTextInput(), newTextInput(), newTextInput()},
-		tagsInput:    newTextInput(),
+		inputs: []textinput.Model{
+			newTextInput(defaultSnippetFolder + " "),
+			newTextInput(defaultSnippetName + " "),
+			newTextInput(config.DefaultLanguage),
+		},
+		tagsInput: newTextInput("Tags"),
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	model, err := p.Run()
@@ -121,11 +125,12 @@ func main() {
 	}
 }
 
-func newTextInput() textinput.Model {
+func newTextInput(placeholder string) textinput.Model {
 	i := textinput.New()
 	i.Prompt = ""
 	i.PromptStyle = lipgloss.NewStyle().Margin(0, 1)
-	i.TextStyle = lipgloss.NewStyle().MarginBottom(1)
+	i.Placeholder = placeholder
+	i.PlaceholderStyle = lipgloss.NewStyle().Foreground(brightBlack)
 	i.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
 	return i
 }
