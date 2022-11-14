@@ -17,7 +17,7 @@ import (
 const defaultSnippetFileContent = `[ { "folder": "", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`
 
 func main() {
-	config := Config{}
+	config := Config{Home: defaultHome(), File: defaultFile()}
 	if err := env.Parse(&config); err != nil {
 		fmt.Println("Unable to unmarshal config", err)
 	}
@@ -78,7 +78,6 @@ func main() {
 	content := viewport.New(80, 0)
 
 	m := &Model{
-		Snippets:     snippets,
 		List:         snippetList,
 		Folders:      folderList,
 		Code:         content,
@@ -90,9 +89,18 @@ func main() {
 		config:       config,
 	}
 	p := tea.NewProgram(m, tea.WithAltScreen())
-	_, err = p.Run()
+	model, err := p.Run()
 	if err != nil {
 		fmt.Println("Alas, there was an error.", err)
 		return
 	}
+
+	fm, ok := model.(*Model)
+	if !ok {
+		fmt.Println("Alas, there was an error.", err)
+	}
+
+	b, err := json.Marshal(fm.List.Items())
+
+	fmt.Println(string(b))
 }

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -32,6 +33,7 @@ const (
 	DeletingState
 	CreatingState
 	CopyingState
+	QuittingState
 )
 
 // Model represents the state of the application.
@@ -74,8 +76,8 @@ func (m *Model) Init() tea.Cmd {
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 	return func() tea.Msg {
-		if len(m.Snippets) > 0 {
-			return updateViewMsg(m.Snippets[0])
+		if len(m.List.Items()) > 0 {
+			return updateViewMsg(m.List.Items()[0].(Snippet))
 		}
 		return nil
 	}
@@ -89,7 +91,7 @@ type updateViewMsg Snippet
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateViewMsg:
-		if len(m.Snippets) <= 0 {
+		if len(m.List.Items()) <= 0 {
 			return m, nil
 		}
 
@@ -141,17 +143,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
+			m.State = QuittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
 			m.State = CreatingState
+			folder := defaultFolder
+			folderItem := m.Folders.SelectedItem()
+			if folderItem != nil && folderItem.FilterValue() != "" {
+				folder = folderItem.FilterValue()
+			}
 			file := fmt.Sprintf("snooze-%d.go", rand.Intn(1000000))
-			f, _ := os.Create(m.config.Home + "/" + file)
+			f, _ := os.Create(filepath.Join(m.config.Home, folder, file))
 			f.WriteString(untitledSnippet)
-			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go"})
+			m.List.InsertItem(m.List.Index(), Snippet{Title: "Untitled Snippet", Date: time.Now(), File: file, Language: "Go", Tags: []string{}, Folder: folder})
 			m.updateKeyMap()
 		case key.Matches(msg, m.keys.CopySnippet):
 			m.State = CopyingState
-			content, err := os.ReadFile(m.config.Home + "/" + m.activeSnippet().Folder + "/" + m.activeSnippet().File)
+			content, err := os.ReadFile(filepath.Join(m.config.Home, m.activeSnippet().Folder, m.activeSnippet().File))
 			if err != nil {
 				return m, nil
 			}
@@ -262,6 +270,9 @@ func (m *Model) activeSnippet() Snippet {
 
 // View returns the view string for the application model.
 func (m *Model) View() string {
+	if m.State == QuittingState {
+		return ""
+	}
 	return lipgloss.JoinVertical(
 		lipgloss.Top,
 		lipgloss.JoinHorizontal(

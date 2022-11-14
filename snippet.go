@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+const defaultFolder = "misc"
+
 // Snippet represents a snippet of code in a language.
 // It is nested within a folder and can be tagged with metadata.
 type Snippet struct {

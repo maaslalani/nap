@@ -3,6 +3,7 @@ module github.com/maaslalani/snooze
 go 1.19
 
 require (
+	github.com/adrg/xdg v0.4.0
 	github.com/alecthomas/chroma v0.10.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/caarlos0/env/v6 v6.10.1
