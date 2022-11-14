@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
@@ -14,7 +15,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-const defaultSnippetFileContent = `[ { "folder": "", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`
+var defaultSnippetFileContent = fmt.Sprintf(`[ { "folder": "%s", "title": "Untitled Snippet", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "go" } ]`, defaultFolder)
 
 func main() {
 	config := Config{Home: defaultHome(), File: defaultFile()}
@@ -27,7 +28,7 @@ func main() {
 	dir, err := os.ReadFile(file)
 	if err != nil {
 		// File does not exist, create one.
-		err := os.MkdirAll(config.Home, os.ModePerm)
+		err := os.MkdirAll(filepath.Join(config.Home, defaultFolder), os.ModePerm)
 		if err != nil {
 			fmt.Printf("Unable to create directory %s, %+v", config.Home, err)
 		}
