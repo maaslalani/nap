@@ -32,8 +32,8 @@ var DefaultKeyMap = KeyMap{
 	EditSnippet:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
 	CopySnippet:   key.NewBinding(key.WithKeys("c"), key.WithHelp("c", "copy")),
 	PasteSnippet:  key.NewBinding(key.WithKeys("p"), key.WithHelp("p", "paste")),
-	RenameSnippet: key.NewBinding(key.WithKeys("R"), key.WithHelp("R", "rename")),
-	SetFolder:     key.NewBinding(key.WithKeys("F"), key.WithHelp("F", "move")),
+	RenameSnippet: key.NewBinding(key.WithKeys("r"), key.WithHelp("r", "rename")),
+	SetFolder:     key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "folder")),
 	SetLanguage:   key.NewBinding(key.WithKeys("L"), key.WithHelp("L", "language")),
 	TagSnippet:    key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tag")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
@@ -51,15 +51,15 @@ func (k KeyMap) ShortHelp() []key.Binding {
 		k.DeleteSnippet,
 		k.CopySnippet,
 		k.NewSnippet,
+		k.ToggleHelp,
 	}
 }
 
 // FullHelp returns all help options in a more detailed view.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.NextPane, k.PreviousPane},
-		{k.Search},
-		{k.EditSnippet, k.DeleteSnippet, k.NewSnippet},
-		{k.CopySnippet, k.PasteSnippet},
+		{k.NextPane, k.PreviousPane, k.ToggleHelp},
+		{k.Search, k.CopySnippet, k.DeleteSnippet},
+		{k.EditSnippet, k.PasteSnippet, k.RenameSnippet, k.SetFolder, k.SetLanguage},
 	}
 }

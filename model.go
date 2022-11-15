@@ -170,14 +170,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if wasEditing {
 				m.blurInputs()
 				i := m.List.Index()
-				item := m.List.SelectedItem()
-				if item == nil {
-					break
-				}
-				snippet, ok := item.(Snippet)
-				if !ok {
-					break
-				}
+				snippet := m.selectedSnippet()
 				if m.inputs[nameInput].Value() != "" {
 					snippet.Name = m.inputs[nameInput].Value()
 				} else {
@@ -188,12 +181,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					snippet.Folder = defaultSnippetFolder
 				}
-				snippet.Language = m.inputs[languageInput].Value()
-				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
-				err := os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
-				if err != nil {
-					break
+				if m.inputs[languageInput].Value() != "" {
+					snippet.Language = m.inputs[languageInput].Value()
+				} else {
+					snippet.Language = m.config.DefaultLanguage
 				}
+				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
+				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
 				snippet.File = newFile
 				m.List.RemoveItem(i)
 				m.List.InsertItem(i, snippet)
@@ -295,22 +289,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
 			m.State = creatingState
-			return m, func() tea.Msg {
-				folder := defaultSnippetFolder
-				folderItem := m.Folders.SelectedItem()
-				if folderItem != nil && folderItem.FilterValue() != "" {
-					folder = folderItem.FilterValue()
-				}
-				file := fmt.Sprintf("%s-snippet-%d.%s", folder, rand.Intn(1000000), m.config.DefaultLanguage)
-				_, _ = os.Create(filepath.Join(m.config.Home, file))
-				m.List.InsertItem(m.List.Index(), Snippet{Name: defaultSnippetName, Date: time.Now(), File: file, Language: m.config.DefaultLanguage, Tags: []string{}, Folder: folder})
-				return changeStateMsg{navigatingState}
-			}
+			return m, m.createNewSnippetFile()
 		case key.Matches(msg, m.keys.PasteSnippet):
 			return m, changeState(pastingState)
 		case key.Matches(msg, m.keys.RenameSnippet):
 			m.activeInput = nameInput
 			return m, changeState(editingState)
+		case key.Matches(msg, m.keys.ToggleHelp):
+			m.help.ShowAll = !m.help.ShowAll
 		case key.Matches(msg, m.keys.SetFolder):
 			m.activeInput = folderInput
 			return m, changeState(editingState)
@@ -555,9 +541,35 @@ func (m *Model) updateKeyMap() {
 func (m *Model) selectedSnippet() Snippet {
 	item := m.List.SelectedItem()
 	if item == nil {
-		return Snippet{Name: "No Snippets", Folder: defaultSnippetFolder, Language: m.config.DefaultLanguage, File: "snooze.txt"}
+		return defaultSnippet
 	}
 	return item.(Snippet)
+}
+
+// createNewSnippet creates a new snippet file and adds it to the the list.
+func (m *Model) createNewSnippetFile() tea.Cmd {
+	return func() tea.Msg {
+		folder := defaultSnippetFolder
+		folderItem := m.Folders.SelectedItem()
+		if folderItem != nil && folderItem.FilterValue() != "" {
+			folder = folderItem.FilterValue()
+		}
+
+		file := fmt.Sprintf("%s-snippet-%d.%s", folder, rand.Intn(1000000), m.config.DefaultLanguage)
+		_, _ = os.Create(filepath.Join(m.config.Home, file))
+
+		newSnippet := Snippet{
+			Name:     defaultSnippetName,
+			Date:     time.Now(),
+			File:     file,
+			Language: m.config.DefaultLanguage,
+			Tags:     []string{},
+			Folder:   folder,
+		}
+
+		m.List.InsertItem(m.List.Index(), newSnippet)
+		return changeStateMsg{navigatingState}
+	}
 }
 
 // View returns the view string for the application model.

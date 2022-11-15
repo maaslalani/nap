@@ -29,7 +29,7 @@ func main() {
 	dir, err := os.ReadFile(file)
 	if err != nil {
 		// File does not exist, create one.
-		err := os.MkdirAll(filepath.Join(config.Home, defaultSnippetFolder), os.ModePerm)
+		err := os.MkdirAll(config.Home, os.ModePerm)
 		if err != nil {
 			fmt.Printf("Unable to create directory %s, %+v", config.Home, err)
 		}
@@ -52,6 +52,9 @@ func main() {
 	for _, snippet := range snippets {
 		folders[snippet.Folder]++
 		items = append(items, list.Item(snippet))
+	}
+	if len(items) <= 0 {
+		items = append(items, list.Item(defaultSnippet))
 	}
 	snippetList := list.New(items, snippetDelegate{}, 0, 0)
 

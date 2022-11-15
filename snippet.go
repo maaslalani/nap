@@ -5,8 +5,17 @@ import (
 )
 
 const defaultSnippetFolder = "misc"
-
+const defaultLanguage = "go"
 const defaultSnippetName = "Untitled Snippet"
+const defaultSnippetFileName = "snooze.txt"
+
+var defaultSnippet = Snippet{
+	Name:     defaultSnippetName,
+	Folder:   defaultSnippetFolder,
+	Language: defaultLanguage,
+	File:     defaultSnippetFileName,
+	Date:     time.Now(),
+}
 
 // Snippet represents a snippet of code in a language.
 // It is nested within a folder and can be tagged with metadata.
