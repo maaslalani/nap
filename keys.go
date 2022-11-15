@@ -38,8 +38,8 @@ var DefaultKeyMap = KeyMap{
 	TagSnippet:    key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tag")),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
 	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
-	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "navigate")),
-	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "navigate")),
+	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
+	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "previous")),
 }
 
 // ShortHelp returns a quick help menu.
@@ -58,8 +58,9 @@ func (k KeyMap) ShortHelp() []key.Binding {
 // FullHelp returns all help options in a more detailed view.
 func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.NextPane, k.PreviousPane, k.ToggleHelp},
-		{k.Search, k.CopySnippet, k.DeleteSnippet},
-		{k.EditSnippet, k.PasteSnippet, k.RenameSnippet, k.SetFolder, k.SetLanguage},
+		{k.NewSnippet, k.EditSnippet, k.PasteSnippet, k.CopySnippet, k.DeleteSnippet},
+		{k.RenameSnippet, k.SetFolder, k.TagSnippet, k.SetLanguage},
+		{k.NextPane, k.PreviousPane},
+		{k.Search, k.ToggleHelp, k.Quit},
 	}
 }

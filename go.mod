@@ -7,11 +7,11 @@ require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/charmbracelet/bubbles v0.14.0
+	github.com/charmbracelet/bubbles v0.14.1-0.20221107150503-fac7a01329ea
 	github.com/charmbracelet/bubbletea v0.23.0
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/dustin/go-humanize v1.0.0
-	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab
+	golang.org/x/exp v0.0.0-20221114191408-850992195362
 )
 
 require (

@@ -236,8 +236,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.List.SetHeight(m.height)
 		m.Folders.SetHeight(m.height)
 		m.Code.Height = m.height
-		m.Code.Width = msg.Width - m.List.Width() - m.Folders.Width() - 20
 		m.LineNumbers.Height = m.height
+		m.Code.Width = msg.Width - m.List.Width() - m.Folders.Width() - 20
 		m.LineNumbers.Width = 5
 		return m, nil
 	case tea.KeyMsg:
@@ -297,6 +297,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, changeState(editingState)
 		case key.Matches(msg, m.keys.ToggleHelp):
 			m.help.ShowAll = !m.help.ShowAll
+
+			var newHeight int
+			if m.help.ShowAll {
+				newHeight = m.height - 4
+			} else {
+				newHeight = m.height
+			}
+			m.List.SetHeight(newHeight)
+			m.Folders.SetHeight(newHeight)
+			m.Code.Height = newHeight
+			m.LineNumbers.Height = newHeight
 		case key.Matches(msg, m.keys.SetFolder):
 			m.activeInput = folderInput
 			return m, changeState(editingState)
@@ -610,6 +621,6 @@ func (m *Model) View() string {
 				),
 			),
 		),
-		"  "+m.help.View(m.keys),
+		marginStyle.Render(m.help.View(m.keys)),
 	)
 }

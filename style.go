@@ -87,6 +87,8 @@ type Styles struct {
 	Content  ContentStyle
 }
 
+var marginStyle = lipgloss.NewStyle().Margin(0, 2)
+
 // DefaultStyles is the default implementation of the styles struct for all
 // styling in the application.
 var DefaultStyles = Styles{
