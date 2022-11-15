@@ -316,7 +316,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, cmd)
 			m.List, cmd = m.List.Update(tea.KeyMsg{Type: tea.KeyEnter})
 			cmds = append(cmds, cmd)
-			m.updateActivePane(msg)
+			cmds = append(cmds, m.updateActivePane(msg))
 			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keys.ToggleHelp):
 			m.help.ShowAll = !m.help.ShowAll
