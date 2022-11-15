@@ -109,7 +109,7 @@ const (
 
 var magnitudes = []humanize.RelTimeMagnitude{
 	{D: 5 * time.Second, Format: "just now", DivBy: time.Second},
-	{D: time.Minute / 2, Format: "moments ago", DivBy: time.Second},
+	{D: time.Minute, Format: "moments ago", DivBy: time.Second},
 	{D: time.Hour, Format: "%dm %s", DivBy: time.Minute},
 	{D: 2 * time.Hour, Format: "1h %s", DivBy: 1},
 	{D: Day, Format: "%dh %s", DivBy: time.Hour},
