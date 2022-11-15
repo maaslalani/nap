@@ -19,6 +19,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/exp/maps"
 )
 
 const maxPane = 3
@@ -118,6 +119,16 @@ func (m *Model) updateContent() tea.Cmd {
 	}
 }
 
+type updateFoldersMsg struct{}
+
+// updateFolders returns a Cmd to  tell the application that there are possible
+// folder changes to update.
+func (m *Model) updateFolders() tea.Cmd {
+	return func() tea.Msg {
+		return updateFoldersMsg{}
+	}
+}
+
 // changeStateMsg tells the application to enter a different state.
 type changeStateMsg struct{ newState state }
 
@@ -131,6 +142,8 @@ func changeState(newState state) tea.Cmd {
 // Update updates the model based on user interaction.
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case updateFoldersMsg:
+		return m.updateFoldersView(msg)
 	case updateContentMsg:
 		return m.updateContentView(msg)
 	case changeStateMsg:
@@ -175,6 +188,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.List.RemoveItem(i)
 				m.List.InsertItem(i, snippet)
 				m.pane = snippetPane
+				cmd = tea.Batch(m.updateFolders(), m.updateContent())
 			}
 		case pastingState:
 			content, err := clipboard.ReadAll()
@@ -212,10 +226,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.updateKeyMap()
 		m.updateActivePane(msg)
-		if wasEditing {
-			return m, m.updateContent()
-		}
-
 		return m, cmd
 	case tea.WindowSizeMsg:
 		m.height = msg.Height - 4
@@ -378,6 +388,26 @@ func (m *Model) noContentHints() []keyHint {
 		{m.keys.SetFolder, "set folder"},
 		{m.keys.SetLanguage, "set language"},
 	}
+}
+
+// updateFolderView updates the folders list to display the current folders.
+func (m *Model) updateFoldersView(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var folders = make(map[string]int)
+	for _, item := range m.List.Items() {
+		snippet, ok := item.(Snippet)
+		if !ok {
+			continue
+		}
+		folders[snippet.Folder]++
+	}
+	var folderItems []list.Item
+	for _, folder := range maps.Keys(folders) {
+		folderItems = append(folderItems, Folder(folder))
+	}
+	m.Folders.SetItems(folderItems)
+	var cmd tea.Cmd
+	m.Folders, cmd = m.Folders.Update(msg)
+	return m, cmd
 }
 
 // updateContentView updates the content view with the correct content based on
