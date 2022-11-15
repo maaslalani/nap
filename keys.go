@@ -20,6 +20,7 @@ type KeyMap struct {
 	Cancel        key.Binding
 	NextPane      key.Binding
 	PreviousPane  key.Binding
+	ChangeFolder  key.Binding
 }
 
 // DefaultKeyMap is the default key map for the application.
@@ -40,12 +41,14 @@ var DefaultKeyMap = KeyMap{
 	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
 	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
 	PreviousPane:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "previous")),
+	ChangeFolder:  key.NewBinding(key.WithKeys("enter"), key.WithHelp("enter", "change folder"), key.WithDisabled()),
 }
 
 // ShortHelp returns a quick help menu.
 func (k KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.NextPane,
+		k.ChangeFolder,
 		k.Search,
 		k.EditSnippet,
 		k.DeleteSnippet,

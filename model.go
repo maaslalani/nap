@@ -295,6 +295,29 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.RenameSnippet):
 			m.activeInput = nameInput
 			return m, changeState(editingState)
+		case key.Matches(msg, m.keys.ChangeFolder):
+			m.pane = snippetPane
+			var cmd tea.Cmd
+			var cmds []tea.Cmd
+			m.List.ResetFilter()
+			// HACK: Currently there is not a way to programatically set a filter with a
+			// method, so we just emulate key presses here.
+			m.List, cmd = m.List.Update(tea.KeyMsg{
+				Type:  tea.KeyRunes,
+				Runes: []rune{'/'},
+				Alt:   false,
+			})
+			cmds = append(cmds, cmd)
+			m.List, cmd = m.List.Update(tea.KeyMsg{
+				Type:  tea.KeyRunes,
+				Runes: []rune(m.Folders.SelectedItem().FilterValue()),
+				Alt:   false,
+			})
+			cmds = append(cmds, cmd)
+			m.List, cmd = m.List.Update(tea.KeyMsg{Type: tea.KeyEnter})
+			cmds = append(cmds, cmd)
+			m.updateActivePane(msg)
+			return m, tea.Batch(cmds...)
 		case key.Matches(msg, m.keys.ToggleHelp):
 			m.help.ShowAll = !m.help.ShowAll
 
@@ -546,6 +569,7 @@ func (m *Model) updateKeyMap() {
 	m.keys.PasteSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
 	m.keys.EditSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
 	m.keys.NewSnippet.SetEnabled(!isFiltering && !isEditing)
+	m.keys.ChangeFolder.SetEnabled(m.pane == folderPane)
 }
 
 // selectedSnippet returns the currently selected snippet.
