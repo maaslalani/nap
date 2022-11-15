@@ -170,7 +170,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if wasEditing {
 				m.blurInputs()
 				i := m.List.Index()
-				snippet := m.List.SelectedItem().(Snippet)
+				item := m.List.SelectedItem()
+				if item == nil {
+					break
+				}
+				snippet, ok := item.(Snippet)
+				if !ok {
+					break
+				}
 				if m.inputs[nameInput].Value() != "" {
 					snippet.Name = m.inputs[nameInput].Value()
 				} else {
@@ -183,7 +190,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				snippet.Language = m.inputs[languageInput].Value()
 				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
-				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
+				err := os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
+				if err != nil {
+					break
+				}
 				snippet.File = newFile
 				m.List.RemoveItem(i)
 				m.List.InsertItem(i, snippet)

@@ -59,6 +59,9 @@ func main() {
 	for _, folder := range maps.Keys(folders) {
 		folderItems = append(folderItems, list.Item(Folder(folder)))
 	}
+	if len(folderItems) <= 0 {
+		folderItems = append(folderItems, list.Item(Folder(defaultSnippetFolder)))
+	}
 	folderList := list.New(folderItems, folderDelegate{}, 0, 0)
 	folderList.Title = "Folders"
 
