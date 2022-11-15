@@ -1,4 +1,4 @@
-module github.com/maaslalani/snooze
+module github.com/maaslalani/nap
 
 go 1.19
 

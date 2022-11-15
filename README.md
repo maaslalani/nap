@@ -1,3 +1,3 @@
-# Snooze
+# Nap
 
-Snooze is a snippet manager in your terminal.
+Nap is a code snippet manager in your terminal.

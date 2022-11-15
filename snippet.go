@@ -7,7 +7,7 @@ import (
 const defaultSnippetFolder = "misc"
 const defaultLanguage = "go"
 const defaultSnippetName = "Untitled Snippet"
-const defaultSnippetFileName = "snooze.txt"
+const defaultSnippetFileName = "nap.txt"
 
 var defaultSnippet = Snippet{
 	Name:     defaultSnippetName,

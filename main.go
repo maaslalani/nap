@@ -16,7 +16,7 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "snooze.txt", "language": "%s" } ]`
+var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
 
 func main() {
 	config := Config{Home: defaultHome()}
