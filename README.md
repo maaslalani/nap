@@ -89,6 +89,7 @@ List snippets:
 ```bash
 nap list
 ```
+<img width="600" src="https://user-images.githubusercontent.com/42545625/202242653-1696dda6-2527-4c38-b673-74d67ad1517f.gif" />
 
 Fuzzy find a snippet (with [Gum](https://github.com/charmbracelet/gum)).
 
