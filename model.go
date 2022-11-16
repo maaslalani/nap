@@ -20,6 +20,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 const maxPane = 3
@@ -429,7 +430,10 @@ func (m *Model) updateFoldersView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		folders[snippet.Folder]++
 	}
 	var folderItems []list.Item
-	for _, folder := range maps.Keys(folders) {
+
+	foldersSlice := maps.Keys(folders)
+	slices.Sort(foldersSlice)
+	for _, folder := range foldersSlice {
 		folderItems = append(folderItems, Folder(folder))
 	}
 	m.Folders.SetItems(folderItems)
@@ -460,6 +464,7 @@ func (m *Model) updateContentView(msg updateContentMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// b.WriteString(string(content))
 	err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", m.config.Theme)
 	if err != nil {
 		m.displayError("Unable to highlight file.")

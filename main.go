@@ -19,6 +19,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
@@ -118,7 +119,9 @@ func main() {
 	snippetList := list.New(items, snippetDelegate{}, 0, 0)
 
 	var folderItems []list.Item
-	for _, folder := range maps.Keys(folders) {
+	foldersSlice := maps.Keys(folders)
+	slices.Sort(foldersSlice)
+	for _, folder := range foldersSlice {
 		folderItems = append(folderItems, list.Item(Folder(folder)))
 	}
 	if len(folderItems) <= 0 {

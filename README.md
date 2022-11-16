@@ -68,6 +68,9 @@ curl https://example.com/main.go | nap Notes/FizzBuzz.go
 Output saved snippets:
 
 ```bash
+# Fuzzy find snippet.
+nap fuzzy
+
 # Write snippet to a file.
 nap go/boilerplate > main.go
 
@@ -80,12 +83,6 @@ List snippets:
 
 ```bash
 nap list
-```
-
-List all snippets, with `--filter`:
-
-```bash
-nap list -f search
 ```
 
 Fuzzy find a snippet (with [Gum](https://github.com/charmbracelet/gum)).
@@ -133,11 +130,14 @@ Nap is customized through environment variables:
 
 [MIT](https://github.com/maaslalani/nap/blob/master/LICENSE)
 
-
 ## Feedback
 
 I'd love to hear your feedback on improving `nap`.
-Feel free to reach out via [email](mailto:maas@lalani.dev) or [twitter](https://twitter.com/maaslalani), or [create an issue](https://github.com/maaslalani/nap/issues/new)!
+
+Feel free to reach out via:
+* [Email](mailto:maas@lalani.dev) 
+* [Twitter](https://twitter.com/maaslalani)
+* [GitHub issues](https://github.com/maaslalani/nap/issues/new)
 
 ---
 
