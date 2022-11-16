@@ -63,6 +63,9 @@ nap Notes/FizzBuzz.go < main.go
 
 # Save some code from the internet for later.
 curl https://example.com/main.go | nap Notes/FizzBuzz.go
+
+# Works great with GitHub gists
+gh gist view 4ff8a6472247e6dd2315fd4038926522 | nap
 ```
 
 Output saved snippets:
