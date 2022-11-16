@@ -73,7 +73,7 @@ nap go/boilerplate > main.go
 
 # Copy snippet to clipboard.
 nap foobar | pbcopy
-nap foobar -c
+nap foobar | xclip
 ```
 
 List snippets:

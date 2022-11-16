@@ -52,7 +52,44 @@ func main() {
 		return
 	}
 
-	//
+	stdin := readStdin()
+	if stdin != "" {
+		// Save snippet to location
+		var name string = defaultSnippetName
+		if len(os.Args) > 1 {
+			name = strings.Join(os.Args[1:], " ")
+		}
+
+		folder, name, language := parseName(name)
+		file := fmt.Sprintf("%s-%s.%s", folder, name, language)
+		err := os.WriteFile(filepath.Join(config.Home, file), []byte(stdin), 0644)
+		if err != nil {
+			fmt.Println("unable to create snippet")
+			return
+		}
+
+		// Add snippet metadata
+		snippet := Snippet{
+			Folder:   folder,
+			Date:     time.Now(),
+			Name:     name,
+			File:     file,
+			Language: language,
+		}
+
+		snippets = append([]Snippet{snippet}, snippets...)
+		b, err := json.Marshal(snippets)
+		if err != nil {
+			fmt.Println("Could not mashal latest snippet data.", err)
+			return
+		}
+		err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
+		if err != nil {
+			fmt.Println("Could not save snippets file.", err)
+			return
+		}
+		return
+	}
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
@@ -61,40 +98,6 @@ func main() {
 				fmt.Println(snippet)
 			}
 		default:
-			stdin := readStdin()
-			if stdin != "" {
-				// Save snippet to location
-				folder, name, language := parseName(strings.Join(os.Args[1:], " "))
-				file := fmt.Sprintf("%s-%s.%s", folder, name, language)
-				err := os.WriteFile(filepath.Join(config.Home, file), []byte(stdin), 0644)
-				if err != nil {
-					fmt.Println("unable to create snippet")
-					return
-				}
-
-				// Add snippet metadata
-				snippet := Snippet{
-					Folder:   folder,
-					Date:     time.Now(),
-					Name:     name,
-					File:     file,
-					Language: language,
-				}
-
-				snippets = append([]Snippet{snippet}, snippets...)
-				b, err := json.Marshal(snippets)
-				if err != nil {
-					fmt.Println("Could not mashal latest snippet data.", err)
-					return
-				}
-				err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
-				if err != nil {
-					fmt.Println("Could not save snippets file.", err)
-					return
-				}
-				return
-			}
-
 			matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
 			if len(matches) > 0 {
 				fmt.Println(snippets[matches[0].Index].Content())
@@ -200,7 +203,7 @@ func newTextInput(placeholder string) textinput.Model {
 func parseName(s string) (string, string, string) {
 	var (
 		folder    = defaultSnippetFolder
-		name      = defaultSnippetFileName
+		name      = defaultSnippetName
 		language  = defaultLanguage
 		remaining string
 	)
