@@ -1,12 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/caarlos0/env/v6"
+	"github.com/alecthomas/chroma/quick"
 )
 
 const defaultSnippetFolder = "misc"
@@ -40,17 +41,24 @@ func (s Snippet) String() string {
 }
 
 // Content returns the snippet contents.
-func (s Snippet) Content() string {
-	config := Config{Home: defaultHome()}
-	if err := env.Parse(&config); err != nil {
-		return ""
-	}
+func (s Snippet) Content(highlight bool) string {
+	config := readConfig()
 	file := filepath.Join(config.Home, s.File)
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return ""
 	}
-	return string(content)
+
+	if !highlight {
+		return string(content)
+	}
+
+	var b bytes.Buffer
+	err = quick.Highlight(&b, string(content), s.Language, "terminal16m", config.Theme)
+	if err != nil {
+		return string(content)
+	}
+	return b.String()
 }
 
 // Snippets is a wrapper for a snippets array to implement the fuzzy.Source

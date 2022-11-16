@@ -17,6 +17,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-isatty"
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -38,7 +39,7 @@ func main() {
 			listSnippets(snippets)
 		default:
 			snippet := findSnippet(os.Args[1], snippets)
-			fmt.Print(snippet.Content())
+			fmt.Print(snippet.Content(isatty.IsTerminal(os.Stdout.Fd())))
 		}
 		return
 	}
