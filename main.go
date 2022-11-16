@@ -31,6 +31,7 @@ func main() {
 	stdin := readStdin()
 	if stdin != "" {
 		saveSnippet(stdin, config, snippets)
+		return
 	}
 
 	if len(os.Args) > 1 {
@@ -177,9 +178,7 @@ func saveSnippet(content string, config Config, snippets []Snippet) {
 	err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
 	if err != nil {
 		fmt.Println("Could not save snippets file.", err)
-		return
 	}
-	return
 }
 
 func listSnippets(snippets []Snippet) {
