@@ -24,6 +24,8 @@ Launch the interactive interface:
 nap
 ```
 
+![](https://user-images.githubusercontent.com/42545625/202177235-b34a8e0b-9d35-48aa-998b-a9b0583c46d5.png)
+
 <details>
 
 <summary>Key Bindings</summary>

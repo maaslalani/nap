@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
 )
 
@@ -44,6 +45,23 @@ func main() {
 	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
 		fmt.Printf("Unable to unmarshal %s file, %+v\n", file, err)
+		return
+	}
+
+	//
+
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "list":
+			for _, snippet := range snippets {
+				fmt.Println(snippet)
+			}
+		default:
+			matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
+			if len(matches) > 0 {
+				fmt.Println(snippets[matches[0].Index].Content())
+			}
+		}
 		return
 	}
 
