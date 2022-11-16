@@ -72,6 +72,8 @@ curl https://example.com/main.go | nap Notes/FizzBuzz.go
 gh gist view 4ff8a6472247e6dd2315fd4038926522 | nap
 ```
 
+<img width="600" src="https://user-images.githubusercontent.com/42545625/202279920-b5d4d970-e579-4e43-8c6c-d56b19e1fa4c.gif" />
+
 Output saved snippets:
 
 ```bash
