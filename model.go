@@ -412,7 +412,6 @@ func (m *Model) noContentHints() []keyHint {
 	return []keyHint{
 		{m.keys.EditSnippet, "edit contents"},
 		{m.keys.PasteSnippet, "paste clipboard"},
-		{m.keys.TagSnippet, "set tags"},
 		{m.keys.RenameSnippet, "rename"},
 		{m.keys.SetFolder, "set folder"},
 		{m.keys.SetLanguage, "set language"},

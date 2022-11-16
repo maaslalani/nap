@@ -36,7 +36,7 @@ var DefaultKeyMap = KeyMap{
 	RenameSnippet: key.NewBinding(key.WithKeys("r"), key.WithHelp("r", "rename")),
 	SetFolder:     key.NewBinding(key.WithKeys("f"), key.WithHelp("f", "folder")),
 	SetLanguage:   key.NewBinding(key.WithKeys("L"), key.WithHelp("L", "language")),
-	TagSnippet:    key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tag")),
+	TagSnippet:    key.NewBinding(key.WithKeys("t"), key.WithHelp("t", "tag"), key.WithDisabled()),
 	Confirm:       key.NewBinding(key.WithKeys("y"), key.WithHelp("y", "confirm")),
 	Cancel:        key.NewBinding(key.WithKeys("N", "esc"), key.WithHelp("N", "cancel")),
 	NextPane:      key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next")),
