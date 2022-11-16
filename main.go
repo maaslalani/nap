@@ -25,11 +25,99 @@ import (
 var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
 
 func main() {
-	config := Config{Home: defaultHome()}
-	if err := env.Parse(&config); err != nil {
-		fmt.Println("Unable to unmarshal config", err)
+	config := readConfig()
+	snippets := readSnippets(config)
+	stdin := readStdin()
+	if stdin != "" {
+		saveSnippet(stdin, config, snippets)
 	}
 
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "list":
+			listSnippets(snippets)
+		default:
+			snippet := findSnippet(os.Args[1], snippets)
+			fmt.Print(snippet.Content())
+		}
+		return
+	}
+
+	err := runInteractiveMode(config, snippets)
+	if err != nil {
+		fmt.Println("Alas, there's been an error", err)
+	}
+
+}
+
+func parseName(s string) (string, string, string) {
+	var (
+		folder    = defaultSnippetFolder
+		name      = defaultSnippetName
+		language  = defaultLanguage
+		remaining string
+	)
+
+	tokens := strings.Split(s, "/")
+	if len(tokens) > 1 {
+		folder = tokens[0]
+		remaining = tokens[1]
+	} else {
+		remaining = tokens[0]
+	}
+
+	tokens = strings.Split(remaining, ".")
+	if len(tokens) > 1 {
+		name = tokens[0]
+		language = tokens[1]
+	} else {
+		name = tokens[0]
+	}
+
+	return folder, name, language
+}
+
+func readStdin() string {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return ""
+	}
+
+	if stat.Mode()&os.ModeCharDevice != 0 {
+		return ""
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	var b strings.Builder
+
+	for {
+		r, _, err := reader.ReadRune()
+		if err != nil && err == io.EOF {
+			break
+		}
+		_, err = b.WriteRune(r)
+		if err != nil {
+			return ""
+		}
+	}
+
+	return b.String()
+}
+
+func readConfig() Config {
+	config := Config{Home: defaultHome()}
+	if err := env.Parse(&config); err != nil {
+		return Config{
+			Home:            defaultHome(),
+			File:            defaultSnippetFileName,
+			Theme:           "dracula",
+			DefaultLanguage: "go",
+		}
+	}
+	return config
+}
+
+func readSnippets(config Config) []Snippet {
 	var snippets []Snippet
 	file := filepath.Join(config.Home, config.File)
 	dir, err := os.ReadFile(file)
@@ -50,63 +138,64 @@ func main() {
 	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
 		fmt.Printf("Unable to unmarshal %s file, %+v\n", file, err)
-		return
+		return snippets
 	}
+	return snippets
+}
 
-	stdin := readStdin()
-	if stdin != "" {
-		// Save snippet to location
-		var name string = defaultSnippetName
-		if len(os.Args) > 1 {
-			name = strings.Join(os.Args[1:], " ")
-		}
-
-		folder, name, language := parseName(name)
-		file := fmt.Sprintf("%s-%s.%s", folder, name, language)
-		err := os.WriteFile(filepath.Join(config.Home, file), []byte(stdin), 0644)
-		if err != nil {
-			fmt.Println("unable to create snippet")
-			return
-		}
-
-		// Add snippet metadata
-		snippet := Snippet{
-			Folder:   folder,
-			Date:     time.Now(),
-			Name:     name,
-			File:     file,
-			Language: language,
-		}
-
-		snippets = append([]Snippet{snippet}, snippets...)
-		b, err := json.Marshal(snippets)
-		if err != nil {
-			fmt.Println("Could not mashal latest snippet data.", err)
-			return
-		}
-		err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
-		if err != nil {
-			fmt.Println("Could not save snippets file.", err)
-			return
-		}
-		return
-	}
-
+func saveSnippet(content string, config Config, snippets []Snippet) {
+	// Save snippet to location
+	var name string = defaultSnippetName
 	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "list":
-			for _, snippet := range snippets {
-				fmt.Println(snippet)
-			}
-		default:
-			matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
-			if len(matches) > 0 {
-				fmt.Println(snippets[matches[0].Index].Content())
-			}
-		}
+		name = strings.Join(os.Args[1:], " ")
+	}
+
+	folder, name, language := parseName(name)
+	file := fmt.Sprintf("%s-%s.%s", folder, name, language)
+	err := os.WriteFile(filepath.Join(config.Home, file), []byte(content), 0644)
+	if err != nil {
+		fmt.Println("unable to create snippet")
 		return
 	}
 
+	// Add snippet metadata
+	snippet := Snippet{
+		Folder:   folder,
+		Date:     time.Now(),
+		Name:     name,
+		File:     file,
+		Language: language,
+	}
+
+	snippets = append([]Snippet{snippet}, snippets...)
+	b, err := json.Marshal(snippets)
+	if err != nil {
+		fmt.Println("Could not mashal latest snippet data.", err)
+		return
+	}
+	err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
+	if err != nil {
+		fmt.Println("Could not save snippets file.", err)
+		return
+	}
+	return
+}
+
+func listSnippets(snippets []Snippet) {
+	for _, snippet := range snippets {
+		fmt.Println(snippet)
+	}
+}
+
+func findSnippet(search string, snippets []Snippet) Snippet {
+	matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
+	if len(matches) > 0 {
+		return snippets[matches[0].Index]
+	}
+	return Snippet{}
+}
+
+func runInteractiveMode(config Config, snippets []Snippet) error {
 	var folders = make(map[string]int)
 	var items []list.Item
 	for _, snippet := range snippets {
@@ -171,26 +260,21 @@ func main() {
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	model, err := p.Run()
 	if err != nil {
-		fmt.Println("Alas, there was an error.", err)
-		return
+		return err
 	}
-
 	fm, ok := model.(*Model)
 	if !ok {
-		fmt.Println("Alas, there was an error.", err)
-		return
+		return err
 	}
-
 	b, err := json.Marshal(fm.List.Items())
 	if err != nil {
-		fmt.Println("Could not mashal latest snippet data.", err)
-		return
+		return err
 	}
 	err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
 	if err != nil {
-		fmt.Println("Could not save snippets file.", err)
-		return
+		return err
 	}
+	return nil
 }
 
 func newTextInput(placeholder string) textinput.Model {
@@ -201,58 +285,4 @@ func newTextInput(placeholder string) textinput.Model {
 	i.PlaceholderStyle = lipgloss.NewStyle().Foreground(brightBlack)
 	i.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
 	return i
-}
-
-func parseName(s string) (string, string, string) {
-	var (
-		folder    = defaultSnippetFolder
-		name      = defaultSnippetName
-		language  = defaultLanguage
-		remaining string
-	)
-
-	tokens := strings.Split(s, "/")
-	if len(tokens) > 1 {
-		folder = tokens[0]
-		remaining = tokens[1]
-	} else {
-		remaining = tokens[0]
-	}
-
-	tokens = strings.Split(remaining, ".")
-	if len(tokens) > 1 {
-		name = tokens[0]
-		language = tokens[1]
-	} else {
-		name = tokens[0]
-	}
-
-	return folder, name, language
-}
-
-func readStdin() string {
-	stat, err := os.Stdin.Stat()
-	if err != nil {
-		return ""
-	}
-
-	if stat.Mode()&os.ModeCharDevice != 0 {
-		return ""
-	}
-
-	reader := bufio.NewReader(os.Stdin)
-	var b strings.Builder
-
-	for {
-		r, _, err := reader.ReadRune()
-		if err != nil && err == io.EOF {
-			break
-		}
-		_, err = b.WriteRune(r)
-		if err != nil {
-			return ""
-		}
-	}
-
-	return b.String()
 }
