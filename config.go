@@ -13,6 +13,7 @@ import (
 type Config struct {
 	Home            string `env:"NAP_HOME"`
 	File            string `env:"NAP_FILE" envDefault:"snippets.json"`
+	Theme           string `env:"NAP_THEME" envDefault:"dracula"`
 	DefaultLanguage string `env:"NAP_DEFAULT_LANGUAGE" envDefault:"go"`
 }
 

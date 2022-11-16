@@ -52,11 +52,11 @@ func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.
 	}
 	if index == m.Index() {
 		fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.SelectedTitle.Render(s.Name))
-		fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.SelectedSubtitle.Render(humanizeTime(s.Date)))
+		fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.SelectedSubtitle.Render(s.Folder+" • "+humanizeTime(s.Date)))
 		return
 	}
 	fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.UnselectedTitle.Render(s.Name))
-	fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.UnselectedSubtitle.Render(humanizeTime(s.Date)))
+	fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.UnselectedSubtitle.Render(s.Folder+" • "+humanizeTime(s.Date)))
 }
 
 // Folder represents a group of snippets in a directory.

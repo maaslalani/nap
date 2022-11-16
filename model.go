@@ -462,7 +462,7 @@ func (m *Model) updateContentView(msg updateContentMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", "dracula")
+	err = quick.Highlight(&b, string(content), msg.Language, "terminal16m", m.config.Theme)
 	if err != nil {
 		m.displayError("Unable to highlight file.")
 		return m, nil

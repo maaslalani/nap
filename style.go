@@ -87,7 +87,7 @@ type Styles struct {
 	Content  ContentStyle
 }
 
-var marginStyle = lipgloss.NewStyle().Margin(0, 2)
+var marginStyle = lipgloss.NewStyle().Margin(1, 0, 0, 1)
 
 // DefaultStyles is the default implementation of the styles struct for all
 // styling in the application.
@@ -114,16 +114,16 @@ var DefaultStyles = Styles{
 	},
 	Folders: FoldersStyle{
 		Focused: FoldersBaseStyle{
-			Base:       lipgloss.NewStyle().Width(20),
+			Base:       lipgloss.NewStyle().Width(22),
 			Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(white),
-			TitleBar:   lipgloss.NewStyle().Background(primaryColorSubdued).Width(20-2).Margin(0, 1, 1, 1),
+			TitleBar:   lipgloss.NewStyle().Background(primaryColorSubdued).Width(22-2).Margin(0, 1, 1, 1),
 			Selected:   lipgloss.NewStyle().Foreground(primaryColor),
 			Unselected: lipgloss.NewStyle().Foreground(gray),
 		},
 		Blurred: FoldersBaseStyle{
-			Base:       lipgloss.NewStyle().Width(20),
+			Base:       lipgloss.NewStyle().Width(22),
 			Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(gray),
-			TitleBar:   lipgloss.NewStyle().Background(black).Width(20-2).Margin(0, 1, 1, 1),
+			TitleBar:   lipgloss.NewStyle().Background(black).Width(22-2).Margin(0, 1, 1, 1),
 			Selected:   lipgloss.NewStyle().Foreground(black),
 			Unselected: lipgloss.NewStyle().Foreground(black),
 		},
