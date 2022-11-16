@@ -82,7 +82,7 @@ nap foobar | pbcopy
 nap foobar | xclip
 ```
 
-![fuzzy-find](https://user-images.githubusercontent.com/42545625/202240249-d724fd73-2f90-4036-b9fc-6d2ccef982b3.gif)
+<img width="600" src="https://user-images.githubusercontent.com/42545625/202240249-d724fd73-2f90-4036-b9fc-6d2ccef982b3.gif" />
 
 List snippets:
 
@@ -96,7 +96,7 @@ Fuzzy find a snippet (with [Gum](https://github.com/charmbracelet/gum)).
 nap $(nap list | gum filter)
 ```
 
-![nap-gum](https://user-images.githubusercontent.com/42545625/202240268-3a71fde6-73c3-4b0a-b129-f87ec1bb1b88.gif)
+<img width="600" src="https://user-images.githubusercontent.com/42545625/202240268-3a71fde6-73c3-4b0a-b129-f87ec1bb1b88.gif" />
 
 ## Installation
 
