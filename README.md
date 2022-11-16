@@ -8,7 +8,13 @@ text-user interface.
 
 Keep your code snippets safe, sound, and well-rested, right from your terminal.
 
-![](https://user-images.githubusercontent.com/42545625/202177235-b34a8e0b-9d35-48aa-998b-a9b0583c46d5.png)
+<br />
+
+<p align="center">
+<img width="1000" src="https://user-images.githubusercontent.com/42545625/202191135-0eca8fbc-a216-4c00-a3f2-ef6ce41f011f.gif" />
+</p>
+
+<br />
 
 ## Text-based User Interface
 
