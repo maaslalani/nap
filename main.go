@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
@@ -57,6 +61,40 @@ func main() {
 				fmt.Println(snippet)
 			}
 		default:
+			stdin := readStdin()
+			if stdin != "" {
+				// Save snippet to location
+				folder, name, language := parseName(strings.Join(os.Args[1:], " "))
+				file := fmt.Sprintf("%s-%s.%s", folder, name, language)
+				err := os.WriteFile(filepath.Join(config.Home, file), []byte(stdin), 0644)
+				if err != nil {
+					fmt.Println("unable to create snippet")
+					return
+				}
+
+				// Add snippet metadata
+				snippet := Snippet{
+					Folder:   folder,
+					Date:     time.Now(),
+					Name:     name,
+					File:     file,
+					Language: language,
+				}
+
+				snippets = append([]Snippet{snippet}, snippets...)
+				b, err := json.Marshal(snippets)
+				if err != nil {
+					fmt.Println("Could not mashal latest snippet data.", err)
+					return
+				}
+				err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
+				if err != nil {
+					fmt.Println("Could not save snippets file.", err)
+					return
+				}
+				return
+			}
+
 			matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
 			if len(matches) > 0 {
 				fmt.Println(snippets[matches[0].Index].Content())
@@ -157,4 +195,58 @@ func newTextInput(placeholder string) textinput.Model {
 	i.PlaceholderStyle = lipgloss.NewStyle().Foreground(brightBlack)
 	i.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
 	return i
+}
+
+func parseName(s string) (string, string, string) {
+	var (
+		folder    = defaultSnippetFolder
+		name      = defaultSnippetFileName
+		language  = defaultLanguage
+		remaining string
+	)
+
+	tokens := strings.Split(s, "/")
+	if len(tokens) > 1 {
+		folder = tokens[0]
+		remaining = tokens[1]
+	} else {
+		remaining = tokens[0]
+	}
+
+	tokens = strings.Split(remaining, ".")
+	if len(tokens) > 1 {
+		name = tokens[0]
+		language = tokens[1]
+	} else {
+		name = tokens[0]
+	}
+
+	return folder, name, language
+}
+
+func readStdin() string {
+	stat, err := os.Stdin.Stat()
+	if err != nil {
+		return ""
+	}
+
+	if stat.Mode()&os.ModeCharDevice != 0 {
+		return ""
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	var b strings.Builder
+
+	for {
+		r, _, err := reader.ReadRune()
+		if err != nil && err == io.EOF {
+			break
+		}
+		_, err = b.WriteRune(r)
+		if err != nil {
+			return ""
+		}
+	}
+
+	return b.String()
 }
