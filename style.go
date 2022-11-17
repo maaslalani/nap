@@ -4,8 +4,8 @@ import "github.com/charmbracelet/lipgloss"
 
 // primary color and primary color subdued are the colors used for the
 // selection purposes.
-const primaryColor = lipgloss.Color("#B294BB")
-const primaryColorSubdued = lipgloss.Color("#85678F")
+const primaryColor = lipgloss.Color("#AFBEE1")
+const primaryColorSubdued = lipgloss.Color("#7382A4")
 
 // colors for the application.
 const black = lipgloss.Color("#282a2e")
@@ -13,16 +13,16 @@ const blue = lipgloss.Color("#5f819d")
 const brightBlack = lipgloss.Color("#373b41")
 const brightBlue = lipgloss.Color("#81a2be")
 const brightCyan = lipgloss.Color("#8abeb7")
-const brightGreen = lipgloss.Color("#b5bd68")
+const brightGreen = lipgloss.Color("#BCE1AF")
 const brightMagenta = lipgloss.Color("#b294bb")
-const brightRed = lipgloss.Color("#CC6666")
+const brightRed = lipgloss.Color("#E1AFAF")
 const brightWhite = lipgloss.Color("#c5c8c6")
 const brightYellow = lipgloss.Color("#f0c674")
 const cyan = lipgloss.Color("#5e8d87")
 const gray = lipgloss.Color("240")
-const green = lipgloss.Color("#8c9440")
+const green = lipgloss.Color("#74A473")
 const magenta = lipgloss.Color("#85678f")
-const red = lipgloss.Color("#954D4D")
+const red = lipgloss.Color("#A47373")
 const white = lipgloss.Color("#fff")
 const yellow = lipgloss.Color("#de935f")
 
