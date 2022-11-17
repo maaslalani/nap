@@ -337,7 +337,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.updateActivePane(msg)
 			m.State = deletingState
 			m.List().Styles.TitleBar.Background(red)
-			m.List().Title = "Delete snippet? (y/N)"
+			m.List().Title = "Delete? (y/N)"
 			m.ListStyle.SelectedTitle.Foreground(brightRed)
 			m.ListStyle.SelectedSubtitle.Foreground(red)
 		case key.Matches(msg, m.keys.EditSnippet):
@@ -530,6 +530,7 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 		m.ContentStyle = DefaultStyles.Content.Blurred
 		m.FoldersStyle = DefaultStyles.Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
+		m.updateKeyMap()
 		cmds = append(cmds, cmd)
 	case snippetPane:
 		m.ListStyle = DefaultStyles.Snippets.Focused
