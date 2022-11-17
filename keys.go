@@ -48,7 +48,6 @@ var DefaultKeyMap = KeyMap{
 func (k KeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.NextPane,
-		k.ChangeFolder,
 		k.Search,
 		k.EditSnippet,
 		k.DeleteSnippet,
