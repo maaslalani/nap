@@ -1,6 +1,7 @@
 # Nap
 
-![](https://user-images.githubusercontent.com/42545625/202176622-a822dc10-f9fb-46bf-943e-a6dc20016618.png)
+<img width="1200" alt="Nap" src="https://user-images.githubusercontent.com/42545625/202545409-eb53f92a-233a-4f78-b598-a59c65248ad3.png">
+
 
 Nap is a code snippet manager for your terminal. Access and create new snippets
 quickly with the command-line interface or browse and manage them with the
