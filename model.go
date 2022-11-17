@@ -117,13 +117,17 @@ func (m *Model) updateContent() tea.Cmd {
 	}
 }
 
-type updateFoldersMsg struct{}
+type updateFoldersMsg struct {
+	items               []list.Item
+	selectedFolderIndex int
+}
 
 // updateFolders returns a Cmd to  tell the application that there are possible
 // folder changes to update.
 func (m *Model) updateFolders() tea.Cmd {
 	return func() tea.Msg {
-		return updateFoldersMsg{}
+		msg := m.updateFoldersView()
+		return msg
 	}
 }
 
@@ -141,7 +145,11 @@ func changeState(newState state) tea.Cmd {
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case updateFoldersMsg:
-		return m.updateFoldersView(msg)
+		setItemsCmd := m.Folders.SetItems(msg.items)
+		m.Folders.Select(msg.selectedFolderIndex)
+		var cmd tea.Cmd
+		m.Folders, cmd = m.Folders.Update(msg)
+		return m, tea.Batch(setItemsCmd, cmd)
 	case updateContentMsg:
 		return m.updateContentView(msg)
 	case changeStateMsg:
@@ -187,10 +195,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
 				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
 				snippet.File = newFile
-				m.List().RemoveItem(i)
-				m.List().InsertItem(i, snippet)
+				setCmd := m.List().SetItem(i, snippet)
 				m.pane = snippetPane
-				cmd = tea.Batch(m.updateFolders(), m.updateContent())
+				cmd = tea.Batch(setCmd, m.updateFolders(), m.updateContent())
 			}
 		case pastingState:
 			content, err := clipboard.ReadAll()
@@ -399,7 +406,9 @@ func (m *Model) noContentHints() []keyHint {
 }
 
 // updateFolderView updates the folders list to display the current folders.
-func (m *Model) updateFoldersView(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) updateFoldersView() tea.Msg {
+	var selectedFolder Folder
+	selectedFolderIndex := m.Folders.Index()
 	for folder, li := range m.Lists {
 		for i, item := range li.Items() {
 			snippet, ok := item.(Snippet)
@@ -407,13 +416,15 @@ func (m *Model) updateFoldersView(msg tea.Msg) (tea.Model, tea.Cmd) {
 				continue
 			}
 			f := Folder(snippet.Folder)
-			_, ok = m.Lists[Folder(snippet.Folder)]
+			_, ok = m.Lists[f]
 			if !ok {
-				m.Lists[Folder(snippet.Folder)] = newList([]list.Item{})
+				m.Lists[f] = newList([]list.Item{})
+				selectedFolder = f
 			}
 			if f != folder {
 				li.RemoveItem(i)
 				m.Lists[f].InsertItem(0, item)
+				selectedFolder = f
 			}
 		}
 	}
@@ -421,13 +432,17 @@ func (m *Model) updateFoldersView(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	foldersSlice := maps.Keys(m.Lists)
 	slices.Sort(foldersSlice)
-	for _, folder := range foldersSlice {
+	for i, folder := range foldersSlice {
 		folderItems = append(folderItems, Folder(folder))
+		if folder == selectedFolder {
+			selectedFolderIndex = i
+		}
 	}
-	m.Folders.SetItems(folderItems)
-	var cmd tea.Cmd
-	m.Folders, cmd = m.Folders.Update(msg)
-	return m, cmd
+
+	return updateFoldersMsg{
+		items:               folderItems,
+		selectedFolderIndex: selectedFolderIndex,
+	}
 }
 
 // updateContentView updates the content view with the correct content based on
