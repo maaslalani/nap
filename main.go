@@ -283,13 +283,14 @@ func newList(items []list.Item, height int) *list.Model {
 	snippetList.Title = "Snippets"
 
 	snippetList.FilterInput.Prompt = "Find: "
-	snippetList.FilterInput.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor).Background(primaryColorSubdued)
 	snippetList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(white).MarginLeft(1)
-	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(primaryColorSubdued)
+	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(blue)
+	snippetList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(white).Background(blue)
+	snippetList.FilterInput.CursorStyle = lipgloss.NewStyle().Foreground(white)
+	snippetList.FilterInput.Cursor.TextStyle = lipgloss.NewStyle().Foreground(white).Background(blue)
 	snippetList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(gray)
 	snippetList.SetStatusBarItemName("snippet", "snippets")
 	snippetList.DisableQuitKeybindings()
-	snippetList.Styles.FilterCursor = lipgloss.NewStyle().Foreground(primaryColor).Background(primaryColorSubdued)
 	snippetList.Styles.Title = DefaultStyles.Snippets.Blurred.Title
 	snippetList.Styles.TitleBar = DefaultStyles.Snippets.Blurred.TitleBar
 
@@ -302,6 +303,6 @@ func newTextInput(placeholder string) textinput.Model {
 	i.PromptStyle = lipgloss.NewStyle().Margin(0, 1)
 	i.Placeholder = placeholder
 	i.PlaceholderStyle = lipgloss.NewStyle().Foreground(brightBlack)
-	i.CursorStyle = lipgloss.NewStyle().Foreground(primaryColor)
+	i.CursorStyle = lipgloss.NewStyle().Foreground(blue)
 	return i
 }

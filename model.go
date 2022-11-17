@@ -561,9 +561,9 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 func (m *Model) resetTitleBar() {
 	m.List().Title = "Snippets"
 	if m.pane == snippetPane {
-		m.List().Styles.TitleBar.Background(primaryColorSubdued)
-		m.ListStyle.SelectedTitle.Foreground(primaryColor)
-		m.ListStyle.SelectedSubtitle.Foreground(primaryColorSubdued)
+		m.List().Styles.TitleBar.Background(blue)
+		m.ListStyle.SelectedTitle.Foreground(blue)
+		m.ListStyle.SelectedSubtitle.Foreground(blue)
 	}
 }
 

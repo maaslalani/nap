@@ -4,25 +4,23 @@ import "github.com/charmbracelet/lipgloss"
 
 // primary color and primary color subdued are the colors used for the
 // selection purposes.
-const primaryColor = lipgloss.Color("#AFBEE1")
-const primaryColorSubdued = lipgloss.Color("#7382A4")
+const brightBlue = lipgloss.Color("#AFBEE1")
+const blue = lipgloss.Color("#64708D")
 
 // colors for the application.
-const black = lipgloss.Color("#282a2e")
-const blue = lipgloss.Color("#5f819d")
 const brightBlack = lipgloss.Color("#373b41")
-const brightBlue = lipgloss.Color("#81a2be")
 const brightCyan = lipgloss.Color("#8abeb7")
 const brightGreen = lipgloss.Color("#BCE1AF")
 const brightMagenta = lipgloss.Color("#b294bb")
 const brightRed = lipgloss.Color("#E1AFAF")
 const brightWhite = lipgloss.Color("#c5c8c6")
 const brightYellow = lipgloss.Color("#f0c674")
+const black = lipgloss.Color("#282a2e")
 const cyan = lipgloss.Color("#5e8d87")
 const gray = lipgloss.Color("240")
-const green = lipgloss.Color("#74A473")
+const green = lipgloss.Color("#63A461")
 const magenta = lipgloss.Color("#85678f")
-const red = lipgloss.Color("#A47373")
+const red = lipgloss.Color("#A46060")
 const white = lipgloss.Color("#fff")
 const yellow = lipgloss.Color("#de935f")
 
@@ -96,10 +94,10 @@ var DefaultStyles = Styles{
 		Focused: SnippetsBaseStyle{
 			Base:               lipgloss.NewStyle().Width(35),
 			Title:              lipgloss.NewStyle().Padding(0, 1).Foreground(white),
-			TitleBar:           lipgloss.NewStyle().Background(primaryColorSubdued).Width(35-2).Margin(0, 1, 1, 1),
-			SelectedSubtitle:   lipgloss.NewStyle().Foreground(primaryColorSubdued),
+			TitleBar:           lipgloss.NewStyle().Background(blue).Width(35-2).Margin(0, 1, 1, 1),
+			SelectedSubtitle:   lipgloss.NewStyle().Foreground(blue),
 			UnselectedSubtitle: lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
-			SelectedTitle:      lipgloss.NewStyle().Foreground(primaryColor),
+			SelectedTitle:      lipgloss.NewStyle().Foreground(brightBlue),
 			UnselectedTitle:    lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
 		},
 		Blurred: SnippetsBaseStyle{
@@ -116,8 +114,8 @@ var DefaultStyles = Styles{
 		Focused: FoldersBaseStyle{
 			Base:       lipgloss.NewStyle().Width(22),
 			Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(white),
-			TitleBar:   lipgloss.NewStyle().Background(primaryColorSubdued).Width(22-2).Margin(0, 1, 1, 1),
-			Selected:   lipgloss.NewStyle().Foreground(primaryColor),
+			TitleBar:   lipgloss.NewStyle().Background(blue).Width(22-2).Margin(0, 1, 1, 1),
+			Selected:   lipgloss.NewStyle().Foreground(brightBlue),
 			Unselected: lipgloss.NewStyle().Foreground(gray),
 		},
 		Blurred: FoldersBaseStyle{
@@ -131,11 +129,11 @@ var DefaultStyles = Styles{
 	Content: ContentStyle{
 		Focused: ContentBaseStyle{
 			Base:         lipgloss.NewStyle().Margin(0, 1),
-			Title:        lipgloss.NewStyle().Background(primaryColorSubdued).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
+			Title:        lipgloss.NewStyle().Background(blue).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
 			Separator:    lipgloss.NewStyle().Foreground(white).Margin(0, 0, 1, 1),
 			LineNumber:   lipgloss.NewStyle().Foreground(brightBlack),
 			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
-			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColor),
+			EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
 		},
 		Blurred: ContentBaseStyle{
 			Base:         lipgloss.NewStyle().Margin(0, 1),
@@ -143,7 +141,7 @@ var DefaultStyles = Styles{
 			Separator:    lipgloss.NewStyle().Foreground(gray).Margin(0, 0, 1, 1),
 			LineNumber:   lipgloss.NewStyle().Foreground(black),
 			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
-			EmptyHintKey: lipgloss.NewStyle().Foreground(primaryColor),
+			EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
 		},
 	},
 }
