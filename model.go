@@ -562,7 +562,7 @@ func (m *Model) resetTitleBar() {
 	m.List().Title = "Snippets"
 	if m.pane == snippetPane {
 		m.List().Styles.TitleBar.Background(blue)
-		m.ListStyle.SelectedTitle.Foreground(blue)
+		m.ListStyle.SelectedTitle.Foreground(brightBlue)
 		m.ListStyle.SelectedSubtitle.Foreground(blue)
 	}
 }
