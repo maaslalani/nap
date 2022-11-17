@@ -238,7 +238,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	case tea.WindowSizeMsg:
 		m.height = msg.Height - 4
-		m.List().SetHeight(m.height)
+		for _, li := range m.Lists {
+			li.SetHeight(m.height)
+		}
 		m.Folders.SetHeight(m.height)
 		m.Code.Height = m.height
 		m.LineNumbers.Height = m.height
@@ -418,7 +420,7 @@ func (m *Model) updateFoldersView() tea.Msg {
 			f := Folder(snippet.Folder)
 			_, ok = m.Lists[f]
 			if !ok {
-				m.Lists[f] = newList([]list.Item{})
+				m.Lists[f] = newList([]list.Item{}, m.height)
 				selectedFolder = f
 			}
 			if f != folder {

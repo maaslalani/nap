@@ -229,7 +229,7 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	lists := map[Folder]*list.Model{}
 
 	for folder, items := range folders {
-		lists[folder] = newList(items)
+		lists[folder] = newList(items, 20)
 	}
 
 	m := &Model{
@@ -276,8 +276,8 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	return nil
 }
 
-func newList(items []list.Item) *list.Model {
-	snippetList := list.New(items, snippetDelegate{}, 25, 40)
+func newList(items []list.Item, height int) *list.Model {
+	snippetList := list.New(items, snippetDelegate{}, 25, height)
 	snippetList.SetShowHelp(false)
 	snippetList.SetShowFilter(true)
 	snippetList.Title = "Snippets"
