@@ -531,7 +531,7 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 		m.FoldersStyle = DefaultStyles.Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
 		m.updateKeyMap()
-		cmds = append(cmds, cmd)
+		cmds = append(cmds, cmd, m.updateContent())
 	case snippetPane:
 		m.ListStyle = DefaultStyles.Snippets.Focused
 		m.ContentStyle = DefaultStyles.Content.Blurred
