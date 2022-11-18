@@ -12,9 +12,8 @@ Keep your code snippets safe, sound, and well-rested, right from your terminal.
 
 <br />
 
-
 <p align="center">
-<img width="1000" src="https://user-images.githubusercontent.com/42545625/202191135-0eca8fbc-a216-4c00-a3f2-ef6ce41f011f.gif" />
+<img width="1000" src="https://user-images.githubusercontent.com/42545625/202577549-f2e0887a-b740-41f4-9408-c2f53673503f.gif" />
 </p>
 
 <br />
@@ -141,6 +140,10 @@ Nap is customized through environment variables:
 * `NAP_HOME`, the folder where your snippets will rest. Defaults to `$XDG_DATA_HOME/snooze`.
 * `NAP_DEFAULT_LANGUAGE`, the language your snippets will use by default.
 * `NAP_THEME`, the theme to highlight code. Defaults to `dracula`.
+
+<p align="center">
+<img width="1000" alt="image" src="https://user-images.githubusercontent.com/42545625/202580527-54c0364f-9f85-45ca-bd63-ad71462040a4.png">
+</p>
 
 ## License
 
