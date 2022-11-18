@@ -10,11 +10,17 @@ import (
 	"github.com/alecthomas/chroma/quick"
 )
 
+// default values for empty state.
 const defaultSnippetFolder = "misc"
 const defaultLanguage = "go"
 const defaultSnippetName = "Untitled Snippet"
 const defaultSnippetFileName = "nap.txt"
 
+// defaultSnippetFileFormat is the file to use for an empty snippets.json file.
+var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
+
+// defaultSnippet is a snippet with all of the default values, used for when
+// there are no snippets available.
 var defaultSnippet = Snippet{
 	Name:     defaultSnippetName,
 	Folder:   defaultSnippetFolder,

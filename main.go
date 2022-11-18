@@ -23,8 +23,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
-
 func main() {
 	config := readConfig()
 	snippets := readSnippets(config)
@@ -49,9 +47,16 @@ func main() {
 	if err != nil {
 		fmt.Println("Alas, there's been an error", err)
 	}
-
 }
 
+// parseName returns a folder, name, and language for the given name.
+// this is useful for parsing file names when passed as command line arguments.
+//
+// Example:
+//   Notes/Hello.go -> (Notes, Hello, go)
+//   Hello.go       -> (Misc, Hello, go)
+//   Notes/Hello    -> (Notes, Hello, go)
+//
 func parseName(s string) (string, string, string) {
 	var (
 		folder    = defaultSnippetFolder
@@ -79,6 +84,7 @@ func parseName(s string) (string, string, string) {
 	return folder, name, language
 }
 
+// readStdin returns the stdin that is piped in to the command line interface.
 func readStdin() string {
 	stat, err := os.Stdin.Stat()
 	if err != nil {
@@ -106,6 +112,7 @@ func readStdin() string {
 	return b.String()
 }
 
+// readConfig returns a configuration read from the environment.
 func readConfig() Config {
 	config := Config{Home: defaultHome()}
 	if err := env.Parse(&config); err != nil {
@@ -119,6 +126,7 @@ func readConfig() Config {
 	return config
 }
 
+// readSnippets returns all the snippets read from the snippets.json file.
 func readSnippets(config Config) []Snippet {
 	var snippets []Snippet
 	file := filepath.Join(config.Home, config.File)
