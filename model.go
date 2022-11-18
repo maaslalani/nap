@@ -210,6 +210,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			f.WriteString(content)
 			return m, changeState(navigatingState)
 		case deletingState:
+			m.state = deletingState
 		case editingState:
 			m.pane = contentPane
 			snippet := m.selectedSnippet()
@@ -256,9 +257,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.List().RemoveItem(m.List().Index())
 				m.state = navigatingState
 				m.updateKeyMap()
-				return m, func() tea.Msg {
+				return m, tea.Batch(changeState(navigatingState), func() tea.Msg {
 					return updateContentMsg(m.selectedSnippet())
-				}
+				})
 			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
 				return m, changeState(navigatingState)
 			}

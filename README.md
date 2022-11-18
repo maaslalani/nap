@@ -141,8 +141,18 @@ Nap is customized through environment variables:
 * `NAP_DEFAULT_LANGUAGE`, the language your snippets will use by default.
 * `NAP_THEME`, the theme to highlight code. Defaults to `dracula`.
 
+* `NAP_PRIMARY_COLOR` / `NAP_PRIMARY_COLOR_SUBDUED`, the color to use for the active pane title bars.
+* `NAP_RED` / `NAP_BRIGHT_RED`, the colors to use for the selected item being deleted.
+* `NAP_GREEN` / `NAP_BRIGHT_GREEN`, the colors to use for the selected item being copied.
+* `NAP_FOREGROUND` / `NAP_BACKGROUND`, the colors to use for the foreground and background colors.
+* `NAP_BLACK` / `NAP_WHITE` / `NAP_GRAY`, the colors to use for the unselected items.
+
 <p align="center">
-<img width="1000" alt="image" src="https://user-images.githubusercontent.com/42545625/202580527-54c0364f-9f85-45ca-bd63-ad71462040a4.png">
+  <img
+    width="1000"
+    alt="image"
+    src="https://user-images.githubusercontent.com/42545625/202580527-54c0364f-9f85-45ca-bd63-ad71462040a4.png"
+  />
 </p>
 
 ## License
