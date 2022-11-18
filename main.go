@@ -205,6 +205,8 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 		items = append(items, list.Item(defaultSnippet))
 	}
 
+	defaultStyles := DefaultStyles(config)
+
 	var folderItems []list.Item
 	foldersSlice := maps.Keys(folders)
 	slices.Sort(foldersSlice)
@@ -214,14 +216,14 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	if len(folderItems) <= 0 {
 		folderItems = append(folderItems, list.Item(Folder(defaultSnippetFolder)))
 	}
-	folderList := list.New(folderItems, folderDelegate{}, 0, 0)
+	folderList := list.New(folderItems, folderDelegate{defaultStyles.Folders.Focused}, 0, 0)
 	folderList.Title = "Folders"
 
 	folderList.SetShowHelp(false)
 	folderList.SetFilteringEnabled(false)
 	folderList.SetShowStatusBar(false)
 	folderList.DisableQuitKeybindings()
-	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(gray)
+	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color(config.GrayColor))
 	folderList.SetStatusBarItemName("folder", "folders")
 
 	content := viewport.New(80, 0)
@@ -229,16 +231,16 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	lists := map[Folder]*list.Model{}
 
 	for folder, items := range folders {
-		lists[folder] = newList(items, 20)
+		lists[folder] = newList(items, 20, defaultStyles.Snippets.Focused)
 	}
 
 	m := &Model{
 		Lists:        lists,
 		Folders:      folderList,
 		Code:         content,
-		ContentStyle: DefaultStyles.Content.Blurred,
-		ListStyle:    DefaultStyles.Snippets.Focused,
-		FoldersStyle: DefaultStyles.Folders.Blurred,
+		ContentStyle: defaultStyles.Content.Blurred,
+		ListStyle:    defaultStyles.Snippets.Focused,
+		FoldersStyle: defaultStyles.Folders.Blurred,
 		keys:         DefaultKeyMap,
 		help:         help.New(),
 		config:       config,
@@ -276,23 +278,19 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	return nil
 }
 
-func newList(items []list.Item, height int) *list.Model {
-	snippetList := list.New(items, snippetDelegate{}, 25, height)
+func newList(items []list.Item, height int, styles SnippetsBaseStyle) *list.Model {
+	snippetList := list.New(items, snippetDelegate{styles, navigatingState}, 25, height)
 	snippetList.SetShowHelp(false)
-	snippetList.SetShowFilter(true)
-	snippetList.Title = "Snippets"
-
+	snippetList.SetShowFilter(false)
+	snippetList.SetShowTitle(false)
+	snippetList.Styles.StatusBar = lipgloss.NewStyle().Margin(1, 2).Foreground(lipgloss.Color("240")).MaxWidth(35 - 2)
+	snippetList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color("8")).MaxWidth(35 - 2)
 	snippetList.FilterInput.Prompt = "Find: "
-	snippetList.FilterInput.PromptStyle = lipgloss.NewStyle().Foreground(white).MarginLeft(1)
-	snippetList.FilterInput.TextStyle = lipgloss.NewStyle().Foreground(white).Background(blue)
-	snippetList.FilterInput.Cursor.Style = lipgloss.NewStyle().Foreground(white).Background(blue)
-	snippetList.FilterInput.CursorStyle = lipgloss.NewStyle().Foreground(white)
-	snippetList.FilterInput.Cursor.TextStyle = lipgloss.NewStyle().Foreground(white).Background(blue)
-	snippetList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(gray)
+	snippetList.FilterInput.PromptStyle = styles.Title
 	snippetList.SetStatusBarItemName("snippet", "snippets")
 	snippetList.DisableQuitKeybindings()
-	snippetList.Styles.Title = DefaultStyles.Snippets.Blurred.Title
-	snippetList.Styles.TitleBar = DefaultStyles.Snippets.Blurred.TitleBar
+	snippetList.Styles.Title = styles.Title
+	snippetList.Styles.TitleBar = styles.TitleBar
 
 	return &snippetList
 }
@@ -302,7 +300,5 @@ func newTextInput(placeholder string) textinput.Model {
 	i.Prompt = ""
 	i.PromptStyle = lipgloss.NewStyle().Margin(0, 1)
 	i.Placeholder = placeholder
-	i.PlaceholderStyle = lipgloss.NewStyle().Foreground(brightBlack)
-	i.CursorStyle = lipgloss.NewStyle().Foreground(blue)
 	return i
 }

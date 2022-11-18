@@ -2,28 +2,6 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-// primary color and primary color subdued are the colors used for the
-// selection purposes.
-const brightBlue = lipgloss.Color("#AFBEE1")
-const blue = lipgloss.Color("#64708D")
-
-// colors for the application.
-const brightBlack = lipgloss.Color("#373b41")
-const brightCyan = lipgloss.Color("#8abeb7")
-const brightGreen = lipgloss.Color("#BCE1AF")
-const brightMagenta = lipgloss.Color("#b294bb")
-const brightRed = lipgloss.Color("#E49393")
-const brightWhite = lipgloss.Color("#c5c8c6")
-const brightYellow = lipgloss.Color("#f0c674")
-const black = lipgloss.Color("#282a2e")
-const cyan = lipgloss.Color("#5e8d87")
-const gray = lipgloss.Color("240")
-const green = lipgloss.Color("#527251")
-const magenta = lipgloss.Color("#85678f")
-const red = lipgloss.Color("#A46060")
-const white = lipgloss.Color("#fff")
-const yellow = lipgloss.Color("#de935f")
-
 // SnippetsStyle is the style struct to handle the focusing and blurring of the
 // snippets pane in the application.
 type SnippetsStyle struct {
@@ -55,6 +33,12 @@ type SnippetsBaseStyle struct {
 	UnselectedSubtitle lipgloss.Style
 	SelectedTitle      lipgloss.Style
 	UnselectedTitle    lipgloss.Style
+	CopiedTitleBar     lipgloss.Style
+	CopiedTitle        lipgloss.Style
+	CopiedSubtitle     lipgloss.Style
+	DeletedTitleBar    lipgloss.Style
+	DeletedTitle       lipgloss.Style
+	DeletedSubtitle    lipgloss.Style
 }
 
 // FoldersBaseStyle holds the neccessary styling for the folders pane of
@@ -89,59 +73,82 @@ var marginStyle = lipgloss.NewStyle().Margin(1, 0, 0, 1)
 
 // DefaultStyles is the default implementation of the styles struct for all
 // styling in the application.
-var DefaultStyles = Styles{
-	Snippets: SnippetsStyle{
-		Focused: SnippetsBaseStyle{
-			Base:               lipgloss.NewStyle().Width(35),
-			Title:              lipgloss.NewStyle().Padding(0, 1).Foreground(white),
-			TitleBar:           lipgloss.NewStyle().Background(blue).Width(35-2).Margin(0, 1, 1, 1),
-			SelectedSubtitle:   lipgloss.NewStyle().Foreground(blue),
-			UnselectedSubtitle: lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
-			SelectedTitle:      lipgloss.NewStyle().Foreground(brightBlue),
-			UnselectedTitle:    lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
+func DefaultStyles(config Config) Styles {
+	white := lipgloss.Color(config.WhiteColor)
+	gray := lipgloss.Color(config.GrayColor)
+	black := lipgloss.Color(config.BackgroundColor)
+	brightBlack := lipgloss.Color(config.BlackColor)
+	green := lipgloss.Color(config.GreenColor)
+	brightGreen := lipgloss.Color(config.BrightGreenColor)
+	brightBlue := lipgloss.Color(config.PrimaryColor)
+	blue := lipgloss.Color(config.PrimaryColorSubdued)
+	red := lipgloss.Color(config.RedColor)
+	brightRed := lipgloss.Color(config.BrightRedColor)
+
+	return Styles{
+		Snippets: SnippetsStyle{
+			Focused: SnippetsBaseStyle{
+				Base:               lipgloss.NewStyle().Width(35),
+				TitleBar:           lipgloss.NewStyle().Background(blue).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1).Foreground(white),
+				SelectedSubtitle:   lipgloss.NewStyle().Foreground(blue),
+				UnselectedSubtitle: lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
+				SelectedTitle:      lipgloss.NewStyle().Foreground(brightBlue),
+				UnselectedTitle:    lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
+				CopiedTitleBar:     lipgloss.NewStyle().Background(green).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
+				CopiedTitle:        lipgloss.NewStyle().Foreground(brightGreen),
+				CopiedSubtitle:     lipgloss.NewStyle().Foreground(green),
+				DeletedTitleBar:    lipgloss.NewStyle().Background(red).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
+				DeletedTitle:       lipgloss.NewStyle().Foreground(brightRed),
+				DeletedSubtitle:    lipgloss.NewStyle().Foreground(red),
+			},
+			Blurred: SnippetsBaseStyle{
+				Base:               lipgloss.NewStyle().Width(35),
+				TitleBar:           lipgloss.NewStyle().Background(black).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1).Foreground(gray),
+				SelectedSubtitle:   lipgloss.NewStyle().Foreground(lipgloss.Color("238")),
+				UnselectedSubtitle: lipgloss.NewStyle().Foreground(black),
+				SelectedTitle:      lipgloss.NewStyle().Foreground(lipgloss.Color("240")),
+				UnselectedTitle:    lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
+				CopiedTitleBar:     lipgloss.NewStyle().Background(green).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
+				CopiedTitle:        lipgloss.NewStyle().Foreground(brightGreen),
+				CopiedSubtitle:     lipgloss.NewStyle().Foreground(green),
+				DeletedTitleBar:    lipgloss.NewStyle().Background(red).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
+				DeletedTitle:       lipgloss.NewStyle().Foreground(brightRed),
+				DeletedSubtitle:    lipgloss.NewStyle().Foreground(red),
+			},
 		},
-		Blurred: SnippetsBaseStyle{
-			Base:               lipgloss.NewStyle().Width(35),
-			Title:              lipgloss.NewStyle().Padding(0, 1).Foreground(gray),
-			TitleBar:           lipgloss.NewStyle().Background(black).Width(35-2).Margin(0, 1, 1, 1),
-			SelectedSubtitle:   lipgloss.NewStyle().Foreground(black),
-			UnselectedSubtitle: lipgloss.NewStyle().Foreground(black),
-			SelectedTitle:      lipgloss.NewStyle().Foreground(black),
-			UnselectedTitle:    lipgloss.NewStyle().Foreground(black),
+		Folders: FoldersStyle{
+			Focused: FoldersBaseStyle{
+				Base:       lipgloss.NewStyle().Width(22),
+				Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(white),
+				TitleBar:   lipgloss.NewStyle().Background(blue).Width(22-2).Margin(0, 1, 1, 1),
+				Selected:   lipgloss.NewStyle().Foreground(brightBlue),
+				Unselected: lipgloss.NewStyle().Foreground(gray),
+			},
+			Blurred: FoldersBaseStyle{
+				Base:       lipgloss.NewStyle().Width(22),
+				Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(gray),
+				TitleBar:   lipgloss.NewStyle().Background(black).Width(22-2).Margin(0, 1, 1, 1),
+				Selected:   lipgloss.NewStyle().Foreground(black),
+				Unselected: lipgloss.NewStyle().Foreground(black),
+			},
 		},
-	},
-	Folders: FoldersStyle{
-		Focused: FoldersBaseStyle{
-			Base:       lipgloss.NewStyle().Width(22),
-			Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(white),
-			TitleBar:   lipgloss.NewStyle().Background(blue).Width(22-2).Margin(0, 1, 1, 1),
-			Selected:   lipgloss.NewStyle().Foreground(brightBlue),
-			Unselected: lipgloss.NewStyle().Foreground(gray),
+		Content: ContentStyle{
+			Focused: ContentBaseStyle{
+				Base:         lipgloss.NewStyle().Margin(0, 1),
+				Title:        lipgloss.NewStyle().Background(blue).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
+				Separator:    lipgloss.NewStyle().Foreground(white).Margin(0, 0, 1, 1),
+				LineNumber:   lipgloss.NewStyle().Foreground(brightBlack),
+				EmptyHint:    lipgloss.NewStyle().Foreground(gray),
+				EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
+			},
+			Blurred: ContentBaseStyle{
+				Base:         lipgloss.NewStyle().Margin(0, 1),
+				Title:        lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
+				Separator:    lipgloss.NewStyle().Foreground(gray).Margin(0, 0, 1, 1),
+				LineNumber:   lipgloss.NewStyle().Foreground(black),
+				EmptyHint:    lipgloss.NewStyle().Foreground(gray),
+				EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
+			},
 		},
-		Blurred: FoldersBaseStyle{
-			Base:       lipgloss.NewStyle().Width(22),
-			Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(gray),
-			TitleBar:   lipgloss.NewStyle().Background(black).Width(22-2).Margin(0, 1, 1, 1),
-			Selected:   lipgloss.NewStyle().Foreground(black),
-			Unselected: lipgloss.NewStyle().Foreground(black),
-		},
-	},
-	Content: ContentStyle{
-		Focused: ContentBaseStyle{
-			Base:         lipgloss.NewStyle().Margin(0, 1),
-			Title:        lipgloss.NewStyle().Background(blue).Foreground(white).Margin(0, 0, 1, 1).Padding(0, 1),
-			Separator:    lipgloss.NewStyle().Foreground(white).Margin(0, 0, 1, 1),
-			LineNumber:   lipgloss.NewStyle().Foreground(brightBlack),
-			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
-			EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
-		},
-		Blurred: ContentBaseStyle{
-			Base:         lipgloss.NewStyle().Margin(0, 1),
-			Title:        lipgloss.NewStyle().Background(black).Foreground(gray).Margin(0, 0, 1, 1).Padding(0, 1),
-			Separator:    lipgloss.NewStyle().Foreground(gray).Margin(0, 0, 1, 1),
-			LineNumber:   lipgloss.NewStyle().Foreground(black),
-			EmptyHint:    lipgloss.NewStyle().Foreground(gray),
-			EmptyHintKey: lipgloss.NewStyle().Foreground(brightBlue),
-		},
-	},
+	}
 }

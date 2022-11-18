@@ -81,7 +81,7 @@ type Model struct {
 	// the current active pane of focus.
 	pane pane
 	// the current state / action of the application.
-	State state
+	state state
 	// stying for components
 	ListStyle    SnippetsBaseStyle
 	FoldersStyle FoldersBaseStyle
@@ -94,8 +94,6 @@ func (m *Model) Init() tea.Cmd {
 
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
-	m.List().Styles.Title = m.ListStyle.Title
-	m.List().Styles.TitleBar = m.ListStyle.TitleBar
 	m.updateKeyMap()
 
 	return func() tea.Msg {
@@ -153,17 +151,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case updateContentMsg:
 		return m.updateContentView(msg)
 	case changeStateMsg:
+		m.List().SetDelegate(snippetDelegate{m.ListStyle, msg.newState})
+
 		var cmd tea.Cmd
 
-		if m.State == msg.newState {
+		if m.state == msg.newState {
 			break
 		}
 
-		wasEditing := m.State == editingState
-		wasPasting := m.State == pastingState
-		wasCreating := m.State == creatingState
-		m.State = msg.newState
-		m.resetTitleBar()
+		wasEditing := m.state == editingState
+		wasPasting := m.state == pastingState
+		wasCreating := m.state == creatingState
+		m.state = msg.newState
 		m.updateKeyMap()
 		m.updateActivePane(msg)
 
@@ -225,12 +224,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case creatingState:
 		case copyingState:
 			m.pane = snippetPane
+			m.state = copyingState
 			m.updateActivePane(msg)
-			m.List().Styles.TitleBar.Background(green)
-			m.List().Title = "Copied " + m.selectedSnippet().Name + "!"
-			m.ListStyle.SelectedTitle.Foreground(brightGreen)
-			m.ListStyle.SelectedSubtitle.Foreground(green)
-			cmd = tea.Tick(time.Second, func(time.Time) tea.Msg { return changeStateMsg{navigatingState} })
+			cmd = tea.Tick(time.Second, func(t time.Time) tea.Msg {
+				return changeStateMsg{navigatingState}
+			})
 		}
 
 		m.updateKeyMap()
@@ -252,30 +250,24 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 
-		if m.State == deletingState {
+		if m.state == deletingState {
 			switch {
 			case key.Matches(msg, m.keys.Confirm):
 				m.List().RemoveItem(m.List().Index())
-				m.resetTitleBar()
-				m.State = navigatingState
+				m.state = navigatingState
 				m.updateKeyMap()
 				return m, func() tea.Msg {
 					return updateContentMsg(m.selectedSnippet())
 				}
 			case key.Matches(msg, m.keys.Quit, m.keys.Cancel):
-				m.resetTitleBar()
-				m.State = navigatingState
+				return m, changeState(navigatingState)
 			}
 			return m, nil
-		} else if m.State == copyingState {
-			m.resetTitleBar()
-			m.State = navigatingState
-			break
-		} else if m.State == editingState {
+		} else if m.state == copyingState {
+			return m, changeState(navigatingState)
+		} else if m.state == editingState {
 			if msg.String() == "esc" || msg.String() == "enter" {
-				return m, func() tea.Msg {
-					return changeStateMsg{navigatingState}
-				}
+				return m, changeState(navigatingState)
 			}
 			var cmd tea.Cmd
 			var cmds []tea.Cmd
@@ -292,10 +284,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
-			m.State = quittingState
+			m.state = quittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
-			m.State = creatingState
+			m.state = creatingState
 			return m, m.createNewSnippetFile()
 		case key.Matches(msg, m.keys.PasteSnippet):
 			return m, changeState(pastingState)
@@ -337,11 +329,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.DeleteSnippet):
 			m.pane = snippetPane
 			m.updateActivePane(msg)
-			m.State = deletingState
-			m.List().Styles.TitleBar.Background(red)
 			m.List().Title = "Delete? (y/N)"
-			m.ListStyle.SelectedTitle.Foreground(brightRed)
-			m.ListStyle.SelectedSubtitle.Foreground(red)
+			return m, changeState(deletingState)
 		case key.Matches(msg, m.keys.EditSnippet):
 			return m, m.editSnippet()
 		}
@@ -420,7 +409,7 @@ func (m *Model) updateFoldersView() tea.Msg {
 			f := Folder(snippet.Folder)
 			_, ok = m.Lists[f]
 			if !ok {
-				m.Lists[f] = newList([]list.Item{}, m.height)
+				m.Lists[f] = newList([]list.Item{}, m.height, m.ListStyle)
 				selectedFolder = f
 			}
 			if f != folder {
@@ -528,43 +517,32 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	switch m.pane {
 	case folderPane:
-		m.ListStyle = DefaultStyles.Snippets.Blurred
-		m.ContentStyle = DefaultStyles.Content.Blurred
-		m.FoldersStyle = DefaultStyles.Folders.Focused
+		m.ListStyle = DefaultStyles(m.config).Snippets.Blurred
+		m.ContentStyle = DefaultStyles(m.config).Content.Blurred
+		m.FoldersStyle = DefaultStyles(m.config).Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
 		m.updateKeyMap()
 		cmds = append(cmds, cmd, m.updateContent())
 	case snippetPane:
-		m.ListStyle = DefaultStyles.Snippets.Focused
-		m.ContentStyle = DefaultStyles.Content.Blurred
-		m.FoldersStyle = DefaultStyles.Folders.Blurred
-		*m.List(), cmd = m.List().Update(msg)
+		m.ListStyle = DefaultStyles(m.config).Snippets.Focused
+		m.ContentStyle = DefaultStyles(m.config).Content.Blurred
+		m.FoldersStyle = DefaultStyles(m.config).Folders.Blurred
+		*m.List(), cmd = (*m.List()).Update(msg)
 		cmds = append(cmds, cmd)
 	case contentPane:
-		m.ListStyle = DefaultStyles.Snippets.Blurred
-		m.ContentStyle = DefaultStyles.Content.Focused
-		m.FoldersStyle = DefaultStyles.Folders.Blurred
+		m.ListStyle = DefaultStyles(m.config).Snippets.Blurred
+		m.ContentStyle = DefaultStyles(m.config).Content.Focused
+		m.FoldersStyle = DefaultStyles(m.config).Folders.Blurred
 		m.Code, cmd = m.Code.Update(msg)
 		cmds = append(cmds, cmd)
 		m.LineNumbers, cmd = m.LineNumbers.Update(msg)
 		cmds = append(cmds, cmd)
 	}
-	m.List().Styles.TitleBar = m.ListStyle.TitleBar
-	m.List().Styles.Title = m.ListStyle.Title
+	m.List().SetDelegate(snippetDelegate{m.ListStyle, m.state})
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 
 	return tea.Batch(cmds...)
-}
-
-// resetTitleBar resets the title bar to original navigating state.
-func (m *Model) resetTitleBar() {
-	m.List().Title = "Snippets"
-	if m.pane == snippetPane {
-		m.List().Styles.TitleBar.Background(blue)
-		m.ListStyle.SelectedTitle.Foreground(brightBlue)
-		m.ListStyle.SelectedSubtitle.Foreground(blue)
-	}
 }
 
 // updateKeyMap disables or enables the keys based on the current state of the
@@ -572,7 +550,7 @@ func (m *Model) resetTitleBar() {
 func (m *Model) updateKeyMap() {
 	hasItems := len(m.List().VisibleItems()) > 0
 	isFiltering := m.List().FilterState() == list.Filtering
-	isEditing := m.State == editingState
+	isEditing := m.state == editingState
 	m.keys.DeleteSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
 	m.keys.CopySnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
 	m.keys.PasteSnippet.SetEnabled(hasItems && !isFiltering && !isEditing)
@@ -632,7 +610,7 @@ func (m *Model) createNewSnippetFile() tea.Cmd {
 
 // View returns the view string for the application model.
 func (m *Model) View() string {
-	if m.State == quittingState {
+	if m.state == quittingState {
 		return ""
 	}
 
@@ -640,12 +618,19 @@ func (m *Model) View() string {
 		folder   = m.ContentStyle.Title.Render(m.selectedSnippet().Folder)
 		name     = m.ContentStyle.Title.Render(m.selectedSnippet().Name)
 		language = m.ContentStyle.Title.Render(m.selectedSnippet().Language)
+		titleBar = m.ListStyle.TitleBar.Render("Snippets")
 	)
 
-	if m.State == editingState {
+	if m.state == editingState {
 		folder = m.inputs[folderInput].View()
 		name = m.inputs[nameInput].View()
 		language = m.inputs[languageInput].View()
+	} else if m.state == copyingState {
+		titleBar = m.ListStyle.CopiedTitleBar.Render("Copied Snippet!")
+	} else if m.state == deletingState {
+		titleBar = m.ListStyle.DeletedTitleBar.Render("Delete Snippet? (y/N)")
+	} else if m.List().SettingFilter() {
+		titleBar = m.ListStyle.TitleBar.Render(m.List().FilterInput.View())
 	}
 
 	return lipgloss.JoinVertical(
@@ -653,7 +638,7 @@ func (m *Model) View() string {
 		lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			m.FoldersStyle.Base.Render(m.Folders.View()),
-			m.ListStyle.Base.Render(m.List().View()),
+			m.ListStyle.Base.Render(titleBar+m.List().View()),
 			lipgloss.JoinVertical(lipgloss.Top,
 				lipgloss.JoinHorizontal(lipgloss.Left,
 					folder,

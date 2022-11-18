@@ -17,7 +17,10 @@ func (s Snippet) FilterValue() string {
 }
 
 // snippetDelegate represents the snippet list item.
-type snippetDelegate struct{}
+type snippetDelegate struct {
+	styles SnippetsBaseStyle
+	state  state
+}
 
 // Height is the number of lines the snippet list item takes up.
 func (d snippetDelegate) Height() int {
@@ -50,13 +53,24 @@ func (d snippetDelegate) Render(w io.Writer, m list.Model, index int, item list.
 	if !ok {
 		return
 	}
+
+	titleStyle := d.styles.SelectedTitle
+	subtitleStyle := d.styles.SelectedSubtitle
+	if d.state == copyingState {
+		titleStyle = d.styles.CopiedTitle
+		subtitleStyle = d.styles.CopiedSubtitle
+	} else if d.state == deletingState {
+		titleStyle = d.styles.DeletedTitle
+		subtitleStyle = d.styles.DeletedSubtitle
+	}
+
 	if index == m.Index() {
-		fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.SelectedTitle.Render(s.Name))
-		fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.SelectedSubtitle.Render(s.Folder+" • "+humanizeTime(s.Date)))
+		fmt.Fprintln(w, "  "+titleStyle.Render(s.Name))
+		fmt.Fprint(w, "  "+subtitleStyle.Render(s.Folder+" • "+humanizeTime(s.Date)))
 		return
 	}
-	fmt.Fprintln(w, "  "+DefaultStyles.Snippets.Focused.UnselectedTitle.Render(s.Name))
-	fmt.Fprint(w, "  "+DefaultStyles.Snippets.Focused.UnselectedSubtitle.Render(s.Folder+" • "+humanizeTime(s.Date)))
+	fmt.Fprintln(w, "  "+d.styles.UnselectedTitle.Render(s.Name))
+	fmt.Fprint(w, "  "+d.styles.UnselectedSubtitle.Render(s.Folder+" • "+humanizeTime(s.Date)))
 }
 
 // Folder represents a group of snippets in a directory.
@@ -68,7 +82,7 @@ func (f Folder) FilterValue() string {
 }
 
 // folderDelegate represents a folder list item.
-type folderDelegate struct{}
+type folderDelegate struct{ styles FoldersBaseStyle }
 
 // Height is the number of lines the folder list item takes up.
 func (d folderDelegate) Height() int {
@@ -94,10 +108,10 @@ func (d folderDelegate) Render(w io.Writer, m list.Model, index int, item list.I
 	}
 	fmt.Fprint(w, "  ")
 	if index == m.Index() {
-		fmt.Fprint(w, DefaultStyles.Folders.Focused.Selected.Render("→ "+string(f)))
+		fmt.Fprint(w, d.styles.Selected.Render("→ "+string(f)))
 		return
 	}
-	fmt.Fprint(w, DefaultStyles.Folders.Focused.Unselected.Render("  "+string(f)))
+	fmt.Fprint(w, d.styles.Unselected.Render("  "+string(f)))
 }
 
 const (
