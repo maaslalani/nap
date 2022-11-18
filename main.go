@@ -216,7 +216,7 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	if len(folderItems) <= 0 {
 		folderItems = append(folderItems, list.Item(Folder(defaultSnippetFolder)))
 	}
-	folderList := list.New(folderItems, folderDelegate{defaultStyles.Folders.Focused}, 0, 0)
+	folderList := list.New(folderItems, folderDelegate{defaultStyles.Folders.Blurred}, 0, 0)
 	folderList.Title = "Folders"
 
 	folderList.SetShowHelp(false)

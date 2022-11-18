@@ -104,9 +104,9 @@ func DefaultStyles(config Config) Styles {
 			Blurred: SnippetsBaseStyle{
 				Base:               lipgloss.NewStyle().Width(35),
 				TitleBar:           lipgloss.NewStyle().Background(black).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1).Foreground(gray),
-				SelectedSubtitle:   lipgloss.NewStyle().Foreground(gray),
+				SelectedSubtitle:   lipgloss.NewStyle().Foreground(blue),
 				UnselectedSubtitle: lipgloss.NewStyle().Foreground(black),
-				SelectedTitle:      lipgloss.NewStyle().Foreground(lipgloss.Color("244")),
+				SelectedTitle:      lipgloss.NewStyle().Foreground(brightBlue),
 				UnselectedTitle:    lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
 				CopiedTitleBar:     lipgloss.NewStyle().Background(green).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
 				CopiedTitle:        lipgloss.NewStyle().Foreground(brightGreen),
@@ -128,8 +128,8 @@ func DefaultStyles(config Config) Styles {
 				Base:       lipgloss.NewStyle().Width(22),
 				Title:      lipgloss.NewStyle().Padding(0, 1).Foreground(gray),
 				TitleBar:   lipgloss.NewStyle().Background(black).Width(22-2).Margin(0, 1, 1, 1),
-				Selected:   lipgloss.NewStyle().Foreground(black),
-				Unselected: lipgloss.NewStyle().Foreground(black),
+				Selected:   lipgloss.NewStyle().Foreground(brightBlue),
+				Unselected: lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
 			},
 		},
 		Content: ContentStyle{

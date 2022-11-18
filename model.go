@@ -540,6 +540,7 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 		cmds = append(cmds, cmd)
 	}
 	m.List().SetDelegate(snippetDelegate{m.ListStyle, m.state})
+	m.Folders.SetDelegate(folderDelegate{m.FoldersStyle})
 	m.Folders.Styles.TitleBar = m.FoldersStyle.TitleBar
 	m.Folders.Styles.Title = m.FoldersStyle.Title
 
