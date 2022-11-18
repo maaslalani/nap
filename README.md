@@ -145,6 +145,8 @@ Nap is customized through environment variables:
 * `NAP_FOREGROUND` / `NAP_BACKGROUND`, the colors to use for the foreground and background colors.
 * `NAP_BLACK` / `NAP_WHITE` / `NAP_GRAY`, the colors to use for the unselected items.
 
+<br />
+
 <p align="center">
   <img
     width="1000"
