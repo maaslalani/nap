@@ -4,8 +4,8 @@
 
 <sub><sub>z</sub></sub><sub>z</sub>z
 
-Nap is a code snippet manager for your terminal. Access and create new snippets
-quickly with the command-line interface or browse and manage them with the
+Nap is a code snippet manager for your terminal. Create and access new snippets
+quickly with the command-line interface or browse, manage, and organize them with the
 text-user interface.
 
 Keep your code snippets safe, sound, and well-rested, right from your terminal.
@@ -51,7 +51,6 @@ nap
 | Quit application | <kbd>q</kbd> <kbd>ctrl+c</kbd> |
 
 </details>
-![nap-demo]()
 
 ## Command Line Interface
 
@@ -59,6 +58,7 @@ Create new snippets:
 
 ```bash
 # Quick save an untitled snippet.
+
 nap < main.go
 
 # From a file, specify Notes/ folder and Go language.
@@ -70,6 +70,8 @@ curl https://example.com/main.go | nap Notes/FizzBuzz.go
 # Works great with GitHub gists
 gh gist view 4ff8a6472247e6dd2315fd4038926522 | nap
 ```
+
+<img width="600" src="https://user-images.githubusercontent.com/42545625/202767159-134d679f-490f-4ad2-8875-cda604aa7b13.gif" />
 
 Output saved snippets:
 
