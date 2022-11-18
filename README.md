@@ -26,7 +26,7 @@ Launch the interactive interface:
 nap
 ```
 
-<img width="1000" src="https://user-images.githubusercontent.com/42545625/202766527-06b01d6a-9ad9-4728-8183-4efb9e05b335.gif" />
+<img width="1000" src="https://user-images.githubusercontent.com/42545625/202768989-caf2ab62-b69d-4e2d-ac93-1517eab7f2ad.gif" />
 
 <details>
 
