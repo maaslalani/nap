@@ -26,10 +26,7 @@ Launch the interactive interface:
 nap
 ```
 
-
-<img width="1000" src="https://user-images.githubusercontent.com/42545625/202278284-03e19ea5-a74b-4628-bd82-9f8d09c57ff5.gif" />
-
-
+<img width="1000" src="https://user-images.githubusercontent.com/42545625/202766527-06b01d6a-9ad9-4728-8183-4efb9e05b335.gif" />
 
 <details>
 
@@ -54,6 +51,7 @@ nap
 | Quit application | <kbd>q</kbd> <kbd>ctrl+c</kbd> |
 
 </details>
+![nap-demo]()
 
 ## Command Line Interface
 
@@ -72,8 +70,6 @@ curl https://example.com/main.go | nap Notes/FizzBuzz.go
 # Works great with GitHub gists
 gh gist view 4ff8a6472247e6dd2315fd4038926522 | nap
 ```
-
-<img width="600" src="https://user-images.githubusercontent.com/42545625/202279920-b5d4d970-e579-4e43-8c6c-d56b19e1fa4c.gif" />
 
 Output saved snippets:
 
