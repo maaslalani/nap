@@ -150,7 +150,7 @@ Nap is customized through environment variables:
   <img
     width="1000"
     alt="image"
-    src="https://user-images.githubusercontent.com/42545625/202580527-54c0364f-9f85-45ca-bd63-ad71462040a4.png"
+    src="https://user-images.githubusercontent.com/42545625/202867429-5bcf8fae-5dd7-478c-b958-638aa5765d97.png"
   />
 </p>
 
