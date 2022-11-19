@@ -58,7 +58,6 @@ Create new snippets:
 
 ```bash
 # Quick save an untitled snippet.
-
 nap < main.go
 
 # From a file, specify Notes/ folder and Go language.
