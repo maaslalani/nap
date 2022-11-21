@@ -123,7 +123,7 @@ nix-env -iA nixpkgs.nap
 Install with Go:
 
 ```sh
-go install github.com/maaslalani/nap@latest
+go install github.com/maaslalani/nap@main
 ```
 
 Or download a binary from the [releases](https://github.com/maaslalani/nap/releases).
