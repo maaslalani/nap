@@ -132,7 +132,7 @@ Or download a binary from the [releases](https://github.com/maaslalani/nap/relea
 ## Customization
 
 Nap is customized through environment variables:
-* `NAP_HOME`, the folder where your snippets will rest. Defaults to `$XDG_DATA_HOME/snooze`.
+* `NAP_HOME`, the folder where your snippets will rest. Defaults to `$XDG_DATA_HOME/nap`.
 * `NAP_DEFAULT_LANGUAGE`, the language your snippets will use by default.
 * `NAP_THEME`, the theme to highlight code. Defaults to `dracula`.
 
