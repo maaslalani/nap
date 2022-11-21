@@ -6,9 +6,7 @@
 
 Nap is a code snippet manager for your terminal. Create and access new snippets
 quickly with the command-line interface or browse, manage, and organize them with the
-text-user interface.
-
-Keep your code snippets safe, sound, and well-rested, right from your terminal.
+text-user interface. Keep your code snippets safe, sound, and well-rested in your terminal.
 
 <br />
 
