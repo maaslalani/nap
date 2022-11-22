@@ -3,13 +3,16 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
@@ -21,6 +24,7 @@ import (
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -53,10 +57,10 @@ func main() {
 // this is useful for parsing file names when passed as command line arguments.
 //
 // Example:
-//   Notes/Hello.go -> (Notes, Hello, go)
-//   Hello.go       -> (Misc, Hello, go)
-//   Notes/Hello    -> (Notes, Hello, go)
 //
+//	Notes/Hello.go -> (Notes, Hello, go)
+//	Hello.go       -> (Misc, Hello, go)
+//	Notes/Hello    -> (Notes, Hello, go)
 func parseName(s string) (string, string, string) {
 	var (
 		folder    = defaultSnippetFolder
@@ -112,17 +116,41 @@ func readStdin() string {
 	return b.String()
 }
 
+// defaultConfig returns the default config path
+func defaultConfig() string {
+	if c := os.Getenv("NAP_CONFIG"); c != "" {
+		return c
+	}
+	cfgPath, err := xdg.ConfigFile("nap/config.yaml")
+	if err != nil {
+		return "config.yaml"
+	}
+	return cfgPath
+}
+
 // readConfig returns a configuration read from the environment.
 func readConfig() Config {
+	def := Config{
+		Home:            defaultHome(),
+		File:            defaultSnippetFileName,
+		Theme:           "dracula",
+		DefaultLanguage: "go",
+	}
+
 	config := Config{Home: defaultHome()}
 	if err := env.Parse(&config); err != nil {
-		return Config{
-			Home:            defaultHome(),
-			File:            defaultSnippetFileName,
-			Theme:           "dracula",
-			DefaultLanguage: "go",
-		}
+		return def
 	}
+
+	fi, err := os.Open(defaultConfig())
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return def
+	}
+	defer fi.Close()
+	if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
+		return def
+	}
+
 	return config
 }
 

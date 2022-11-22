@@ -14,6 +14,7 @@ require (
 	github.com/mattn/go-isatty v0.0.16
 	github.com/sahilm/fuzzy v0.1.0
 	golang.org/x/exp v0.0.0-20221114191408-850992195362
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
