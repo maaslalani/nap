@@ -143,9 +143,11 @@ func readConfig() Config {
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return def
 	}
-	defer fi.Close()
-	if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
-		return def
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
+			return def
+		}
 	}
 
 	if err := env.Parse(&config); err != nil {
