@@ -138,9 +138,6 @@ func readConfig() Config {
 	}
 
 	config := Config{Home: defaultHome()}
-	if err := env.Parse(&config); err != nil {
-		return def
-	}
 
 	fi, err := os.Open(defaultConfig())
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
@@ -148,6 +145,10 @@ func readConfig() Config {
 	}
 	defer fi.Close()
 	if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
+		return def
+	}
+
+	if err := env.Parse(&config); err != nil {
 		return def
 	}
 
