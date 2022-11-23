@@ -147,7 +147,7 @@ Nap is customized through environment variables and/or a config file:
 theme: catppuccin-mocha
 ```
 
-Environment variables and a config file can be mixed, but any config file values will take precedence.
+Environment variables and a config file can be mixed, but any environment values will take precedence.
 
 <br />
 
