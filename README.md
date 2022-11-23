@@ -152,14 +152,16 @@ Nap is customized through environment variables:
   />
 </p>
 
-## Command Line Snippets 
+## Snippet Management from Terminal
 - Emulate the functionality of cmd snippet managers like like pet(https://github.com/knqyf263/pet) and the-way(https://github.com/out-of-cheese-error/the-way)
+- read, save and search with just a single terminal command 
 
 below shortcuts require 
 1) gum 
 2) xclip
 3) bash
 4) zsh
+5) nap 
 
 ```
 # select commmand and output snippet on terminal
