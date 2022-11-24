@@ -94,7 +94,7 @@ func DefaultStyles(config Config) Styles {
 				UnselectedSubtitle: lipgloss.NewStyle().Foreground(lipgloss.Color("237")),
 				SelectedTitle:      lipgloss.NewStyle().Foreground(brightBlue),
 				UnselectedTitle:    lipgloss.NewStyle().Foreground(gray),
-				CopiedTitleBar:     lipgloss.NewStyle().Background(green).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1),
+				CopiedTitleBar:     lipgloss.NewStyle().Background(green).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1).Foreground(white),
 				CopiedTitle:        lipgloss.NewStyle().Foreground(brightGreen),
 				CopiedSubtitle:     lipgloss.NewStyle().Foreground(green),
 				DeletedTitleBar:    lipgloss.NewStyle().Background(red).Width(35-2).Margin(0, 1, 1, 1).Padding(0, 1).Foreground(white),
