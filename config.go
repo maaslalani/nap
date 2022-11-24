@@ -34,7 +34,7 @@ type Config struct {
 func newConfig() Config {
 	return Config{
 		Home:                defaultHome(),
-		File:                defaultSnippetFileName,
+		File:                "snippets.json",
 		DefaultLanguage:     defaultLanguage,
 		Theme:               "dracula",
 		PrimaryColor:        "#AFBEE1",
