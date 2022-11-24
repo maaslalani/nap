@@ -138,6 +138,7 @@ Nap is customized through a configuration file located at `NAP_CONFIG` (`$XDG_CO
 home: ~/.nap
 default_language: go
 theme: nord
+
 # Colors
 background: "0"
 foreground: "7"
