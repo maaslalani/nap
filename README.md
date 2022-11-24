@@ -153,7 +153,7 @@ Nap is customized through environment variables:
 </p>
 
 ## Snippet Management from Terminal
-- Emulate the functionality of cmd snippet managers like like pet(https://github.com/knqyf263/pet) and the-way(https://github.com/out-of-cheese-error/the-way)
+- Emulate the functionality of cmd snippet managers like [pet](https://github.com/knqyf263/pet) and [the-way](https://github.com/out-of-cheese-error/the-way)
 - read, save and search with just a single terminal command 
 
 below shortcuts require 
