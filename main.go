@@ -130,28 +130,20 @@ func defaultConfig() string {
 
 // readConfig returns a configuration read from the environment.
 func readConfig() Config {
-	def := Config{
-		Home:            defaultHome(),
-		File:            defaultSnippetFileName,
-		Theme:           "dracula",
-		DefaultLanguage: "go",
-	}
-
-	config := Config{Home: defaultHome()}
-
+	config := newConfig()
 	fi, err := os.Open(defaultConfig())
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return def
+		return newConfig()
 	}
 	if fi != nil {
 		defer fi.Close()
 		if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
-			return def
+			return newConfig()
 		}
 	}
 
 	if err := env.Parse(&config); err != nil {
-		return def
+		return newConfig()
 	}
 
 	return config

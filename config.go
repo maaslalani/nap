@@ -12,23 +12,43 @@ import (
 // file name of the metadata.
 type Config struct {
 	Home string `env:"NAP_HOME" yaml:"home"`
-	File string `env:"NAP_FILE" envDefault:"snippets.json" yaml:"file"`
+	File string `env:"NAP_FILE" yaml:"file"`
 
-	DefaultLanguage string `env:"NAP_DEFAULT_LANGUAGE" envDefault:"go" yaml:"default_language"`
+	DefaultLanguage string `env:"NAP_DEFAULT_LANGUAGE" yaml:"default_language"`
 
-	Theme string `env:"NAP_THEME" envDefault:"dracula" yaml:"theme"`
+	Theme string `env:"NAP_THEME" yaml:"theme"`
 
-	PrimaryColor        string `env:"NAP_PRIMARY_COLOR" envDefault:"#AFBEE1" yaml:"primary_color"`
-	PrimaryColorSubdued string `env:"NAP_PRIMARY_COLOR_SUBDUED" envDefault:"#64708D" yaml:"primary_color_subdued"`
-	BrightGreenColor    string `env:"NAP_BRIGHT_GREEN" envDefault:"#BCE1AF" yaml:"bright_green"`
-	GreenColor          string `env:"NAP_GREEN" envDefault:"#527251" yaml:"green"`
-	BrightRedColor      string `env:"NAP_BRIGHT_RED" envDefault:"#E49393" yaml:"bright_red"`
-	RedColor            string `env:"NAP_RED" envDefault:"#A46060" yaml:"red"`
-	ForegroundColor     string `env:"NAP_FOREGROUND" envDefault:"7" yaml:"foreground"`
-	BackgroundColor     string `env:"NAP_BACKGROUND" envDefault:"0" yaml:"background"`
-	GrayColor           string `env:"NAP_GRAY" envDefault:"240" yaml:"gray"`
-	BlackColor          string `env:"NAP_BLACK" envDefault:"#373b41" yaml:"black"`
-	WhiteColor          string `env:"NAP_WHITE" envDefault:"#FFFFFF" yaml:"white"`
+	PrimaryColor        string `env:"NAP_PRIMARY_COLOR" yaml:"primary_color"`
+	PrimaryColorSubdued string `env:"NAP_PRIMARY_COLOR_SUBDUED" yaml:"primary_color_subdued"`
+	BrightGreenColor    string `env:"NAP_BRIGHT_GREEN" yaml:"bright_green"`
+	GreenColor          string `env:"NAP_GREEN" yaml:"green"`
+	BrightRedColor      string `env:"NAP_BRIGHT_RED" yaml:"bright_red"`
+	RedColor            string `env:"NAP_RED" yaml:"red"`
+	ForegroundColor     string `env:"NAP_FOREGROUND" yaml:"foreground"`
+	BackgroundColor     string `env:"NAP_BACKGROUND" yaml:"background"`
+	GrayColor           string `env:"NAP_GRAY" yaml:"gray"`
+	BlackColor          string `env:"NAP_BLACK" yaml:"black"`
+	WhiteColor          string `env:"NAP_WHITE" yaml:"white"`
+}
+
+func newConfig() Config {
+	return Config{
+		Home:                defaultHome(),
+		File:                defaultSnippetFileName,
+		DefaultLanguage:     "go",
+		Theme:               "dracula",
+		PrimaryColor:        "#AFBEE1",
+		PrimaryColorSubdued: "#64708D",
+		BrightGreenColor:    "#BCE1AF",
+		GreenColor:          "#527251",
+		BrightRedColor:      "#E49393",
+		RedColor:            "#A46060",
+		ForegroundColor:     "7",
+		BackgroundColor:     "0",
+		GrayColor:           "240",
+		BlackColor:          "#373b41",
+		WhiteColor:          "#FFFFFF",
+	}
 }
 
 // default helpers for the configuration.
