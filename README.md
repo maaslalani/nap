@@ -131,23 +131,46 @@ Or download a binary from the [releases](https://github.com/maaslalani/nap/relea
 
 ## Customization
 
-Nap is customized through environment variables and/or a config file:
-* `NAP_HOME`, the folder where your snippets will rest. Defaults to `$XDG_DATA_HOME/nap`.
-* `NAP_DEFAULT_LANGUAGE`, the language your snippets will use by default.
-* `NAP_THEME`, the theme to highlight code. Defaults to `dracula`.
+Nap is customized through a configuration file located at `NAP_CONFIG` (`$XDG_CONFIG_HOME/nap/config.yaml`).
 
-* `NAP_PRIMARY_COLOR` / `NAP_PRIMARY_COLOR_SUBDUED`, the color to use for the active pane title bars.
-* `NAP_RED` / `NAP_BRIGHT_RED`, the colors to use for the selected item being deleted.
-* `NAP_GREEN` / `NAP_BRIGHT_GREEN`, the colors to use for the selected item being copied.
-* `NAP_FOREGROUND` / `NAP_BACKGROUND`, the colors to use for the foreground and background colors.
-* `NAP_BLACK` / `NAP_WHITE` / `NAP_GRAY`, the colors to use for the unselected items.
-* `NAP_CONFIG`. Defaults to `$XDG_CONFIG_HOME/nap/config.yaml`.
 ```yaml
-# Any environment variable without the NAP_ prefix
-theme: catppuccin-mocha
+# Configuration
+home: ~/.nap
+default_language: go
+theme: nord
+# Colors
+background: "0"
+foreground: "7"
+primary_color: "#AFBEE1"
+primary_color_subdued: "#64708D"
+green: "#527251"
+bright_green: "#BCE1AF"
+bright_red: "#E49393"
+red: "#A46060"
+black: "#373B41"
+gray: "240"
+white: "#FFFFFF"
 ```
 
-Environment variables and a config file can be mixed, but any environment values will take precedence.
+The configuration file can be overridden through environment variables:
+
+```bash
+# Configuration
+export NAP_CONFIG="~/.nap/config.yaml"
+export NAP_HOME="~/.nap"
+export NAP_DEFAULT_LANGUAGE="go"
+export NAP_THEME="nord"
+
+# Colors
+export NAP_PRIMARY_COLOR="#AFBEE1"
+export NAP_RED="#A46060"
+export NAP_GREEN="#527251"
+export NAP_FOREGROUND="7"
+export NAP_BACKGROUND="0"
+export NAP_BLACK="#373B41"
+export NAP_GRAY="240"
+export NAP_WHITE="#FFFFFF"
+```
 
 <br />
 
