@@ -35,7 +35,7 @@ func newConfig() Config {
 	return Config{
 		Home:                defaultHome(),
 		File:                defaultSnippetFileName,
-		DefaultLanguage:     "go",
+		DefaultLanguage:     defaultLanguage,
 		Theme:               "dracula",
 		PrimaryColor:        "#AFBEE1",
 		PrimaryColorSubdued: "#64708D",
