@@ -43,9 +43,9 @@ func newConfig() Config {
 		GreenColor:          "#527251",
 		BrightRedColor:      "#E49393",
 		RedColor:            "#A46060",
-		ForegroundColor:     "7",
-		BackgroundColor:     "0",
-		GrayColor:           "240",
+		ForegroundColor:     "15",
+		BackgroundColor:     "235",
+		GrayColor:           "241",
 		BlackColor:          "#373b41",
 		WhiteColor:          "#FFFFFF",
 	}
