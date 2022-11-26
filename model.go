@@ -334,6 +334,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, changeState(deletingState)
 		case key.Matches(msg, m.keys.EditSnippet):
 			return m, m.editSnippet()
+		case key.Matches(msg, m.keys.Search):
+			m.pane = snippetPane
 		}
 	}
 
