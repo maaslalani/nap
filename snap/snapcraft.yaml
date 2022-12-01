@@ -5,22 +5,17 @@ description: |
   Nap is a code snippet manager for your terminal. Create and access new snippets quickly with 
   the command-line interface or browse, manage, and organize them with the text-user interface. 
   Keep your code snippets safe, sound, and well-rested in your terminal.
-    
-license: MIT
-
+  
+  To learn more, visit: https://github.com/maaslalani/nap 
+  
 base: core20
 grade: stable 
 confinement: strict
 compression: lzo
 
-assumes:
-  - command-chain
-  
 apps:
   nap:
     command: bin/nap
-    command-chain: 
-      - bin/homeishome-launch     
     plugs:
       - home
       
@@ -34,9 +29,4 @@ parts:
       
     override-pull: |
       snapcraftctl pull
-      snapcraftctl set-version "$(git describe --tags | sed 's/^v//' | cut -d "-" -f1)"    
-  
-  homeishome-launch:
-    plugin: nil
-    stage-snaps:
-      - homeishome-launch     
+      snapcraftctl set-version "$(git describe --tags | sed 's/^v//' | cut -d "-" -f1)"
