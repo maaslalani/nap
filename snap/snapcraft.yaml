@@ -1,0 +1,42 @@
+name: nap
+adopt-info: nap
+summary: Nap is a code snippet manager for your terminal.
+description: |
+  Nap is a code snippet manager for your terminal. Create and access new snippets quickly with 
+  the command-line interface or browse, manage, and organize them with the text-user interface. 
+  Keep your code snippets safe, sound, and well-rested in your terminal.
+    
+license: MIT
+
+base: core22
+grade: stable 
+confinement: strict
+compression: lzo
+
+assumes:
+  - command-chain
+  
+apps:
+  nap:
+    command: bin/nap
+    command-chain: 
+      - bin/homeishome-launch     
+    plugs:
+      - home
+      
+parts:
+  nap:
+    source: https://github.com/maaslalani/nap
+    source-type: git
+    plugin: go
+    build-snaps:
+      - go
+      
+    override-pull: |
+      snapcraftctl pull
+      snapcraftctl set-version "$(git describe --tags | sed 's/^v//' | cut -d "-" -f1)"    
+  
+  homeishome-launch:
+    plugin: nil
+    stage-snaps:
+      - homeishome-launch     
