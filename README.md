@@ -183,6 +183,54 @@ export NAP_WHITE="#FFFFFF"
   />
 </p>
 
+## Snippet Management from Terminal
+- Emulate the functionality of cmd snippet managers like [pet](https://github.com/knqyf263/pet) and [the-way](https://github.com/out-of-cheese-error/the-way)
+- read, save and search with just a single terminal command 
+
+below shortcuts require 
+1) gum 
+2) xclip
+3) bash
+4) zsh
+5) nap 
+
+```
+# select commmand and output snippet on terminal
+function nsnip() {
+  snippet_name=$(nap list | gum filter)
+  sh -c "nap `printf %q "$snippet_name"`"
+}
+
+#select command and execute terminal
+function nexec() { 
+  snippet_name=$(nap list | gum filter)
+  sh -c "nap `printf %q "$snippet_name"` | bash"
+}
+
+#select cmd and copy to clipboard
+function nclip() { 
+  snippet_name=$(nap list | gum filter)
+  sh -c "nap `printf %q "$snippet_name"` | xclip -selection clipboard"
+}
+
+#save prev command in snippet
+function nsave() {
+  TMPFILE=$(mktemp /tmp/napcli-XXXXX)
+  trap "rm -f $TMPFILE" EXIT
+  PREV=$(fc -lrn | head -n 1)
+  # snippet_name=$(gum input)
+  snippet_name=$(gum input --prompt="Name of snippet: " --value="shell/newcmd" --width=80)
+  echo "New Snippet name: ${snippet_name}"
+  echo "Saved cmd: ${PREV}"
+  echo $PREV >> $TMPFILE  # Append some text to the file
+  sh -c "nap `printf %q "$snippet_name"` < `printf %q "$TMPFILE"`"                    
+  rm $TMPFILE    
+}
+
+```
+
+Pasting these into ~/.zshrc makes it work :)
+
 ## License
 
 [MIT](https://github.com/maaslalani/nap/blob/master/LICENSE)
