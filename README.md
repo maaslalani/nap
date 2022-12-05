@@ -114,6 +114,9 @@ brew install nap
 # Arch
 yay -S nap
 
+# Snap
+sudo snap install nap-snippets
+
 # Nix
 nix-env -iA nixpkgs.nap
 ```
