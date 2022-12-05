@@ -12,6 +12,7 @@ base: core20
 grade: stable 
 confinement: strict
 compression: lzo
+license: MIT
 
 apps:
   nap-snippets:
