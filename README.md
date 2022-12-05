@@ -128,7 +128,12 @@ Install with Go:
 ```sh
 go install github.com/maaslalani/nap@main
 ```
+[![nap-snippets](https://snapcraft.io/nap-snippets/badge.svg)](https://snapcraft.io/nap-snippets)
 
+Install the snap:
+```
+sudo snap install nap-snippets
+```
 Or download a binary from the [releases](https://github.com/maaslalani/nap/releases).
 
 
