@@ -1,12 +1,12 @@
-name: nap
-adopt-info: nap
+name: nap-snippets
+adopt-info: nap-snippets
 summary: Nap is a code snippet manager for your terminal.
 description: |
   Nap is a code snippet manager for your terminal. Create and access new snippets quickly with 
   the command-line interface or browse, manage, and organize them with the text-user interface. 
   Keep your code snippets safe, sound, and well-rested in your terminal.
   
-  To learn more, visit: https://github.com/maaslalani/nap 
+  To learn more, visit: https://github.com/maaslalani/nap
   
 base: core20
 grade: stable 
@@ -14,13 +14,13 @@ confinement: strict
 compression: lzo
 
 apps:
-  nap:
+  nap-snippets:
     command: bin/nap
     plugs:
       - home
       
 parts:
-  nap:
+  nap-snippets:
     source: https://github.com/maaslalani/nap
     source-type: git
     plugin: go
