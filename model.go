@@ -524,6 +524,7 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 		m.ContentStyle = DefaultStyles(m.config).Content.Blurred
 		m.FoldersStyle = DefaultStyles(m.config).Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
+		m.saveConfig()
 		m.updateKeyMap()
 		cmds = append(cmds, cmd, m.updateContent())
 	case snippetPane:
@@ -659,4 +660,13 @@ func (m *Model) View() string {
 		),
 		marginStyle.Render(m.help.View(m.keys)),
 	)
+}
+
+func (m *Model) saveConfig() {
+	selectedFolderIndex := m.Folders.Index()
+	m.config.CurrentFolder = selectedFolderIndex
+	err := m.config.writeConfig()
+	if err != nil {
+		panic(err.Error())
+	}
 }

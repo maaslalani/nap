@@ -149,6 +149,22 @@ func readConfig() Config {
 	return config
 }
 
+// writeConfig returns a configuration read from the environment.
+func (config Config) writeConfig() error {
+	fi, err := os.Create(defaultConfig())
+	if err != nil {
+		return err
+	}
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewEncoder(fi).Encode(&config); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // readSnippets returns all the snippets read from the snippets.json file.
 func readSnippets(config Config) []Snippet {
 	var snippets []Snippet
@@ -256,6 +272,8 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	folderList.DisableQuitKeybindings()
 	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color(config.GrayColor))
 	folderList.SetStatusBarItemName("folder", "folders")
+
+	folderList.Select(config.CurrentFolder)
 
 	content := viewport.New(80, 0)
 
