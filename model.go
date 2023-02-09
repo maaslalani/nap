@@ -285,6 +285,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
+			m.saveConfig()
 			m.state = quittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
@@ -659,4 +660,13 @@ func (m *Model) View() string {
 		),
 		marginStyle.Render(m.help.View(m.keys)),
 	)
+}
+
+func (m *Model) saveConfig() {
+	selectedFolderIndex := m.Folders.Index()
+	m.config.CurrentFolder = selectedFolderIndex
+	err := m.config.writeConfig()
+	if err != nil {
+		panic(err.Error())
+	}
 }
