@@ -285,6 +285,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
+			m.saveConfig()
 			m.state = quittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
@@ -524,7 +525,6 @@ func (m *Model) updateActivePane(msg tea.Msg) tea.Cmd {
 		m.ContentStyle = DefaultStyles(m.config).Content.Blurred
 		m.FoldersStyle = DefaultStyles(m.config).Folders.Focused
 		m.Folders, cmd = m.Folders.Update(msg)
-		m.saveConfig()
 		m.updateKeyMap()
 		cmds = append(cmds, cmd, m.updateContent())
 	case snippetPane:
