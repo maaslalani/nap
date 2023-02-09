@@ -273,7 +273,11 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color(config.GrayColor))
 	folderList.SetStatusBarItemName("folder", "folders")
 
-	folderList.Select(config.CurrentFolder)
+	folderNum := config.CurrentFolder
+	if folderNum >= len(folderList.Items()) {
+		folderNum = 0
+	}
+	folderList.Select(folderNum)
 
 	content := viewport.New(80, 0)
 
