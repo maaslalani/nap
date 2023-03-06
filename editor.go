@@ -17,11 +17,8 @@ func editorCmd(path string) *exec.Cmd {
 
 func getEditor() (string, []string) {
 	editor := strings.Fields(os.Getenv("EDITOR"))
-	if len(editor) > 1 {
+	if len(editor) > 0 {
 		return editor[0], editor[1:]
 	}
-	if len(editor) == 1 {
-		return editor[0], []string{}
-	}
-	return defaultEditor, []string{}
+	return defaultEditor, nil
 }
