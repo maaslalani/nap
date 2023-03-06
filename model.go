@@ -380,11 +380,11 @@ func (m *Model) previousPane() {
 
 // editSnippet opens the editor with the selected snippet file path.
 func (m *Model) editSnippet() tea.Cmd {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "vim"
+	editor := strings.Split(os.Getenv("EDITOR"), " ")
+	if editor[0] == "" {
+		editor[0] = "vim"
 	}
-	cmd := exec.Command(editor, m.selectedSnippetFilePath())
+	cmd := exec.Command(editor[0], append(editor[1:], m.selectedSnippetFilePath())...)
 	return tea.ExecProcess(cmd, func(err error) tea.Msg {
 		return updateContentMsg(m.selectedSnippet())
 	})
