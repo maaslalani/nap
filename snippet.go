@@ -11,10 +11,12 @@ import (
 )
 
 // default values for empty state.
-const defaultSnippetFolder = "misc"
-const defaultLanguage = "go"
-const defaultSnippetName = "Untitled Snippet"
-const defaultSnippetFileName = "nap.txt"
+const (
+	defaultSnippetFolder   = "misc"
+	defaultLanguage        = "go"
+	defaultSnippetName     = "Untitled Snippet"
+	defaultSnippetFileName = "nap.txt"
+)
 
 // defaultSnippetFileFormat is the file to use for an empty snippets.json file.
 var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
