@@ -206,8 +206,8 @@ func migrateSnippets(config Config, snippets []Snippet) []Snippet {
 			continue
 		}
 		file := strings.TrimPrefix(snippet.LegacyPath(), fmt.Sprintf("%s-", snippet.Folder))
-		newPath := filepath.Join(config.Home, snippet.Folder, file)
-		newDir := filepath.Dir(newPath)
+		newDir := filepath.Join(config.Home, snippet.Folder)
+		newPath := filepath.Join(newDir, file)
 		if err := os.Mkdir(newDir, os.ModePerm); err != nil {
 			fmt.Printf("could not create %q: %v\n", newDir, err)
 			continue

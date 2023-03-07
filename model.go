@@ -195,7 +195,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				newPath := filepath.Join(m.config.Home, snippet.Path())
 				_ = os.Mkdir(filepath.Dir(newPath), os.ModePerm)
 				_ = os.Rename(m.selectedSnippetFilePath(), newPath)
-				snippet.File = filepath.Base(newPath)
 				setCmd := m.List().SetItem(i, snippet)
 				m.pane = snippetPane
 				cmd = tea.Batch(setCmd, m.updateFolders(), m.updateContent())
