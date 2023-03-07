@@ -46,10 +46,20 @@ func (s Snippet) String() string {
 	return fmt.Sprintf("%s/%s.%s", s.Folder, s.Name, s.Language)
 }
 
+// LegacyPath returns the legacy path <folder>-<file>
+func (s Snippet) LegacyPath() string {
+	return s.File
+}
+
+// Path returns the path <folder>/<file>
+func (s Snippet) Path() string {
+	return filepath.Join(s.Folder, s.File)
+}
+
 // Content returns the snippet contents.
 func (s Snippet) Content(highlight bool) string {
 	config := readConfig()
-	file := filepath.Join(config.Home, s.File)
+	file := filepath.Join(config.Home, s.Path())
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return ""
