@@ -190,9 +190,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					snippet.Language = m.config.DefaultLanguage
 				}
-				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
-				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
-				snippet.File = newFile
+				file := fmt.Sprintf("%s.%s", snippet.Name, snippet.Language)
+				snippet.File = file
+				newPath := filepath.Join(m.config.Home, snippet.Path())
+				_ = os.Mkdir(filepath.Dir(newPath), os.ModePerm)
+				_ = os.Rename(m.selectedSnippetFilePath(), newPath)
+				snippet.File = filepath.Base(newPath)
 				setCmd := m.List().SetItem(i, snippet)
 				m.pane = snippetPane
 				cmd = tea.Batch(setCmd, m.updateFolders(), m.updateContent())
@@ -206,6 +209,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, changeState(navigatingState)
 			}
+			defer f.Close()
 			f.WriteString(content)
 			return m, changeState(navigatingState)
 		case deletingState:
@@ -361,7 +365,7 @@ func (m *Model) focusInput(i input) tea.Cmd {
 // selectedSnippetFilePath returns the file path of the snippet that is
 // currently selected.
 func (m *Model) selectedSnippetFilePath() string {
-	return filepath.Join(m.config.Home, m.selectedSnippet().File)
+	return filepath.Join(m.config.Home, m.selectedSnippet().Path())
 }
 
 // nextPane sets the next pane to be active.
@@ -445,7 +449,7 @@ func (m *Model) updateContentView(msg updateContentMsg) (tea.Model, tea.Cmd) {
 	}
 
 	var b bytes.Buffer
-	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.File))
+	content, err := os.ReadFile(filepath.Join(m.config.Home, Snippet(msg).Path()))
 	if err != nil {
 		m.displayKeyHint(m.noContentHints())
 		return m, nil
@@ -590,8 +594,7 @@ func (m *Model) createNewSnippetFile() tea.Cmd {
 			folder = folderItem.FilterValue()
 		}
 
-		file := fmt.Sprintf("%s-snippet-%d.%s", folder, rand.Intn(1000000), m.config.DefaultLanguage)
-		_, _ = os.Create(filepath.Join(m.config.Home, file))
+		file := fmt.Sprintf("snippet-%d.%s", rand.Intn(1000000), m.config.DefaultLanguage)
 
 		newSnippet := Snippet{
 			Name:     defaultSnippetName,
@@ -601,6 +604,8 @@ func (m *Model) createNewSnippetFile() tea.Cmd {
 			Tags:     []string{},
 			Folder:   folder,
 		}
+
+		_, _ = os.Create(filepath.Join(m.config.Home, newSnippet.Path()))
 
 		m.List().InsertItem(m.List().Index(), newSnippet)
 		return changeStateMsg{navigatingState}

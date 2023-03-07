@@ -30,6 +30,8 @@ import (
 func main() {
 	config := readConfig()
 	snippets := readSnippets(config)
+	snippets = migrateSnippets(config, snippets)
+
 	stdin := readStdin()
 	if stdin != "" {
 		saveSnippet(stdin, config, snippets)
@@ -192,16 +194,52 @@ func readSnippets(config Config) []Snippet {
 	return snippets
 }
 
+// migrateSnippets migrates any legacy snippet <dir>-<file> format to the new <dir>/<file> format
+func migrateSnippets(config Config, snippets []Snippet) []Snippet {
+	var migrated bool
+	for idx, snippet := range snippets {
+		legacyPath := filepath.Join(config.Home, snippet.LegacyPath())
+		if _, err := os.Stat(legacyPath); err != nil {
+			if !errors.Is(err, fs.ErrNotExist) {
+				fmt.Printf("could not access %q: %v\n", legacyPath, err)
+			}
+			continue
+		}
+		file := strings.TrimPrefix(snippet.LegacyPath(), fmt.Sprintf("%s-", snippet.Folder))
+		newPath := filepath.Join(config.Home, snippet.Folder, file)
+		newDir := filepath.Dir(newPath)
+		if err := os.Mkdir(newDir, os.ModePerm); err != nil {
+			fmt.Printf("could not create %q: %v\n", newDir, err)
+			continue
+		}
+		if err := os.Rename(legacyPath, newPath); err != nil {
+			fmt.Printf("could not move %q to %q: %v\n", legacyPath, newPath, err)
+		}
+		migrated = true
+		snippet.File = file
+		snippets[idx] = snippet
+	}
+	if migrated {
+		writeSnippets(config, snippets)
+	}
+	return snippets
+}
+
 func saveSnippet(content string, config Config, snippets []Snippet) {
 	// Save snippet to location
-	var name string = defaultSnippetName
+	name := defaultSnippetName
 	if len(os.Args) > 1 {
 		name = strings.Join(os.Args[1:], " ")
 	}
 
 	folder, name, language := parseName(name)
-	file := fmt.Sprintf("%s-%s.%s", folder, name, language)
-	err := os.WriteFile(filepath.Join(config.Home, file), []byte(content), 0644)
+	file := fmt.Sprintf("%s.%s", name, language)
+	filePath := filepath.Join(config.Home, folder, file)
+	if err := os.Mkdir(filepath.Dir(filePath), os.ModePerm); err != nil {
+		fmt.Println("unable to create folder")
+		return
+	}
+	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
 		fmt.Println("unable to create snippet")
 		return
@@ -217,9 +255,13 @@ func saveSnippet(content string, config Config, snippets []Snippet) {
 	}
 
 	snippets = append([]Snippet{snippet}, snippets...)
+	writeSnippets(config, snippets)
+}
+
+func writeSnippets(config Config, snippets []Snippet) {
 	b, err := json.Marshal(snippets)
 	if err != nil {
-		fmt.Println("Could not mashal latest snippet data.", err)
+		fmt.Println("Could not marshal latest snippet data.", err)
 		return
 	}
 	err = os.WriteFile(filepath.Join(config.Home, config.File), b, os.ModePerm)
@@ -258,7 +300,7 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	foldersSlice := maps.Keys(folders)
 	slices.Sort(foldersSlice)
 	for _, folder := range foldersSlice {
-		folderItems = append(folderItems, list.Item(Folder(folder)))
+		folderItems = append(folderItems, list.Item(folder))
 	}
 	if len(folderItems) <= 0 {
 		folderItems = append(folderItems, list.Item(Folder(defaultSnippetFolder)))
