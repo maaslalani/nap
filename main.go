@@ -239,7 +239,7 @@ func saveSnippet(content string, config Config, snippets []Snippet) {
 		fmt.Println("unable to create folder")
 		return
 	}
-	err := os.WriteFile(filePath, []byte(content), 0644)
+	err := os.WriteFile(filePath, []byte(content), 0o644)
 	if err != nil {
 		fmt.Println("unable to create snippet")
 		return
@@ -285,7 +285,7 @@ func findSnippet(search string, snippets []Snippet) Snippet {
 }
 
 func runInteractiveMode(config Config, snippets []Snippet) error {
-	var folders = make(map[Folder][]list.Item)
+	folders := make(map[Folder][]list.Item)
 	var items []list.Item
 	for _, snippet := range snippets {
 		folders[Folder(snippet.Folder)] = append(folders[Folder(snippet.Folder)], list.Item(snippet))
