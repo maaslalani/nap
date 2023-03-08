@@ -208,7 +208,7 @@ func migrateSnippets(config Config, snippets []Snippet) []Snippet {
 		file := strings.TrimPrefix(snippet.LegacyPath(), fmt.Sprintf("%s-", snippet.Folder))
 		newDir := filepath.Join(config.Home, snippet.Folder)
 		newPath := filepath.Join(newDir, file)
-		if err := os.Mkdir(newDir, os.ModePerm); err != nil {
+		if err := os.MkdirAll(newDir, os.ModePerm); err != nil {
 			fmt.Printf("could not create %q: %v\n", newDir, err)
 			continue
 		}
@@ -235,7 +235,7 @@ func saveSnippet(content string, config Config, snippets []Snippet) {
 	folder, name, language := parseName(name)
 	file := fmt.Sprintf("%s.%s", name, language)
 	filePath := filepath.Join(config.Home, folder, file)
-	if err := os.Mkdir(filepath.Dir(filePath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
 		fmt.Println("unable to create folder")
 		return
 	}
