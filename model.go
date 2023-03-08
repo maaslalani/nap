@@ -193,7 +193,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				file := fmt.Sprintf("%s.%s", snippet.Name, snippet.Language)
 				snippet.File = file
 				newPath := filepath.Join(m.config.Home, snippet.Path())
-				_ = os.Mkdir(filepath.Dir(newPath), os.ModePerm)
+				_ = os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
 				_ = os.Rename(m.selectedSnippetFilePath(), newPath)
 				setCmd := m.List().SetItem(i, snippet)
 				m.pane = snippetPane
