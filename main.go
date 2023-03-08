@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mattn/go-isatty"
+
 	"github.com/adrg/xdg"
 	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
@@ -20,7 +22,6 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mattn/go-isatty"
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -28,22 +29,26 @@ import (
 )
 
 func main() {
+	runCLI(os.Args[1:])
+}
+
+func runCLI(args []string) {
 	config := readConfig()
 	snippets := readSnippets(config)
 	snippets = migrateSnippets(config, snippets)
 
 	stdin := readStdin()
 	if stdin != "" {
-		saveSnippet(stdin, config, snippets)
+		saveSnippet(stdin, args, config, snippets)
 		return
 	}
 
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
+	if len(args) > 0 {
+		switch args[0] {
 		case "list":
 			listSnippets(snippets)
 		default:
-			snippet := findSnippet(os.Args[1], snippets)
+			snippet := findSnippet(args[0], snippets)
 			fmt.Print(snippet.Content(isatty.IsTerminal(os.Stdout.Fd())))
 		}
 		return
@@ -225,11 +230,11 @@ func migrateSnippets(config Config, snippets []Snippet) []Snippet {
 	return snippets
 }
 
-func saveSnippet(content string, config Config, snippets []Snippet) {
+func saveSnippet(content string, args []string, config Config, snippets []Snippet) {
 	// Save snippet to location
 	name := defaultSnippetName
-	if len(os.Args) > 1 {
-		name = strings.Join(os.Args[1:], " ")
+	if len(args) > 0 {
+		name = strings.Join(args, " ")
 	}
 
 	folder, name, language := parseName(name)
@@ -277,7 +282,7 @@ func listSnippets(snippets []Snippet) {
 }
 
 func findSnippet(search string, snippets []Snippet) Snippet {
-	matches := fuzzy.FindFrom(os.Args[1], Snippets{snippets})
+	matches := fuzzy.FindFrom(search, Snippets{snippets})
 	if len(matches) > 0 {
 		return snippets[matches[0].Index]
 	}
