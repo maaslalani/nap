@@ -1,9 +1,14 @@
 package main
 
 import (
+	"errors"
+	"io/fs"
+	"os"
 	"path/filepath"
 
 	"github.com/adrg/xdg"
+	"github.com/caarlos0/env/v6"
+	"gopkg.in/yaml.v3"
 )
 
 // Config holds the configuration options for the application.
@@ -54,3 +59,52 @@ func newConfig() Config {
 // default helpers for the configuration.
 // We use $XDG_DATA_HOME to avoid cluttering the user's home directory.
 func defaultHome() string { return filepath.Join(xdg.DataHome, "nap") }
+
+// defaultConfig returns the default config path
+func defaultConfig() string {
+	if c := os.Getenv("NAP_CONFIG"); c != "" {
+		return c
+	}
+	cfgPath, err := xdg.ConfigFile("nap/config.yaml")
+	if err != nil {
+		return "config.yaml"
+	}
+	return cfgPath
+}
+
+// readConfig returns a configuration read from the environment.
+func readConfig() Config {
+	config := newConfig()
+	fi, err := os.Open(defaultConfig())
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return newConfig()
+	}
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
+			return newConfig()
+		}
+	}
+
+	if err := env.Parse(&config); err != nil {
+		return newConfig()
+	}
+
+	return config
+}
+
+// writeConfig returns a configuration read from the environment.
+func (config Config) writeConfig() error {
+	fi, err := os.Create(defaultConfig())
+	if err != nil {
+		return err
+	}
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewEncoder(fi).Encode(&config); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
