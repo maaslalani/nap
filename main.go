@@ -290,6 +290,8 @@ func findSnippet(search string, snippets []Snippet) Snippet {
 }
 
 func runInteractiveMode(config Config, snippets []Snippet) error {
+	state := readState()
+
 	folders := make(map[Folder][]list.Item)
 	var items []list.Item
 	for _, snippet := range snippets {
@@ -320,7 +322,7 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color(config.GrayColor))
 	folderList.SetStatusBarItemName("folder", "folders")
 
-	folderNum := config.CurrentFolder
+	folderNum := state.CurrentFolder
 	if folderNum >= len(folderList.Items()) {
 		folderNum = 0
 	}

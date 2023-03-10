@@ -287,7 +287,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
-			m.saveConfig()
+			m.saveState()
 			m.state = quittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
@@ -660,10 +660,12 @@ func (m *Model) View() string {
 	)
 }
 
-func (m *Model) saveConfig() {
+func (m *Model) saveState() {
 	selectedFolderIndex := m.Folders.Index()
-	m.config.CurrentFolder = selectedFolderIndex
-	err := m.config.writeConfig()
+	s := State{
+		CurrentFolder: selectedFolderIndex,
+	}
+	err := s.Save()
 	if err != nil {
 		panic(err.Error())
 	}
