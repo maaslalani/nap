@@ -11,9 +11,8 @@ import (
 // At the moment, it is quite limited, only supporting the home folder and the
 // file name of the metadata.
 type Config struct {
-	Home          string `env:"NAP_HOME" yaml:"home"`
-	File          string `env:"NAP_FILE" yaml:"file"`
-	CurrentFolder int    `yaml:"currentFolder"`
+	Home string `env:"NAP_HOME" yaml:"home"`
+	File string `env:"NAP_FILE" yaml:"file"`
 
 	DefaultLanguage string `env:"NAP_DEFAULT_LANGUAGE" yaml:"default_language"`
 
