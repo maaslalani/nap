@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/caarlos0/env/v6"
@@ -88,6 +89,13 @@ func readConfig() Config {
 
 	if err := env.Parse(&config); err != nil {
 		return newConfig()
+	}
+
+	if strings.HasPrefix(config.Home, "~") {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			config.Home = filepath.Join(home, config.Home[1:])
+		}
 	}
 
 	return config
