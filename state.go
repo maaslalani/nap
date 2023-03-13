@@ -22,7 +22,6 @@ func (s State) Save() error {
 	}
 	defer fi.Close()
 	return json.NewEncoder(fi).Encode(s)
-
 }
 
 // defaultState returns the default state path
