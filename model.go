@@ -662,8 +662,10 @@ func (m *Model) View() string {
 
 func (m *Model) saveState() {
 	selectedFolderIndex := m.Folders.Index()
+	selectedSnippetIndex := m.List().Index()
 	s := State{
-		CurrentFolder: selectedFolderIndex,
+		CurrentFolder:  selectedFolderIndex,
+		CurrentSnippet: selectedSnippetIndex,
 	}
 	err := s.Save()
 	if err != nil {
