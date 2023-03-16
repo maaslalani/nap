@@ -339,8 +339,14 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 
 	lists := map[Folder]*list.Model{}
 
+	snippetNum := state.CurrentSnippet
+	currentFolder := folderList.SelectedItem().(Folder)
 	for folder, items := range folders {
-		lists[folder] = newList(items, 20, defaultStyles.Snippets.Focused)
+		snippetList := newList(items, 20, defaultStyles.Snippets.Focused)
+		if currentFolder == folder && snippetNum <= len(snippetList.Items()) {
+			snippetList.Select(snippetNum)
+		}
+		lists[folder] = snippetList
 	}
 
 	m := &Model{

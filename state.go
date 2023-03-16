@@ -11,7 +11,8 @@ import (
 
 // State is application state between runs
 type State struct {
-	CurrentFolder int
+	CurrentFolder  int
+	CurrentSnippet int
 }
 
 // Save saves the state of the application
