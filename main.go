@@ -28,6 +28,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	helpText = strings.TrimSpace(`
+Nap is a code snippet manager for your terminal.
+https://github.com/maaslalani/nap
+
+Usage:
+  nap           - for interactive mode
+  nap list      - list all snippets
+  nap <snippet> - print snippet to stdout
+
+Create:
+  nap < main.go                 - save snippet from stdin
+  nap example/main.go < main.go - save snippet with name`)
+)
+
 func main() {
 	runCLI(os.Args[1:])
 }
@@ -47,6 +62,8 @@ func runCLI(args []string) {
 		switch args[0] {
 		case "list":
 			listSnippets(snippets)
+		case "-h", "--help":
+			fmt.Println(helpText)
 		default:
 			snippet := findSnippet(args[0], snippets)
 			fmt.Print(snippet.Content(isatty.IsTerminal(os.Stdout.Fd())))
