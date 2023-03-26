@@ -19,7 +19,7 @@ const (
 )
 
 // defaultSnippetFileFormat is the file to use for an empty snippets.json file.
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "%s", "language": "%s" } ]`
+var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
 
 // defaultSnippet is a snippet with all of the default values, used for when
 // there are no snippets available.
