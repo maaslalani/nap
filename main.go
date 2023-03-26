@@ -14,6 +14,8 @@ import (
 
 	"github.com/mattn/go-isatty"
 
+	"github.com/adrg/xdg"
+	"github.com/caarlos0/env/v6"
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -23,6 +25,7 @@ import (
 	"github.com/sahilm/fuzzy"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -48,7 +51,6 @@ func runCLI(args []string) {
 	config := readConfig()
 	snippets := readSnippets(config)
 	snippets = migrateSnippets(config, snippets)
-	snippets = scanSnippets(config, snippets)
 
 	stdin := readStdin()
 	if stdin != "" {
@@ -138,6 +140,62 @@ func readStdin() string {
 	return b.String()
 }
 
+// defaultConfig returns the default config path
+func defaultConfig() string {
+	if c := os.Getenv("NAP_CONFIG"); c != "" {
+		return c
+	}
+	cfgPath, err := xdg.ConfigFile("nap/config.yaml")
+	if err != nil {
+		return "config.yaml"
+	}
+	return cfgPath
+}
+
+// readConfig returns a configuration read from the environment.
+func readConfig() Config {
+	config := newConfig()
+	fi, err := os.Open(defaultConfig())
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return newConfig()
+	}
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewDecoder(fi).Decode(&config); err != nil {
+			return newConfig()
+		}
+	}
+
+	if err := env.Parse(&config); err != nil {
+		return newConfig()
+	}
+
+	if strings.HasPrefix(config.Home, "~") {
+		home, err := os.UserHomeDir()
+		if err == nil {
+			config.Home = filepath.Join(home, config.Home[1:])
+		}
+	}
+
+	return config
+}
+
+// writeConfig returns a configuration read from the environment.
+func (config Config) writeConfig() error {
+	fi, err := os.Create(defaultConfig())
+	if err != nil {
+		return err
+	}
+	if fi != nil {
+		defer fi.Close()
+		if err := yaml.NewEncoder(fi).Encode(&config); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // readSnippets returns all the snippets read from the snippets.json file.
 func readSnippets(config Config) []Snippet {
 	var snippets []Snippet
@@ -153,7 +211,7 @@ func readSnippets(config Config) []Snippet {
 		if err != nil {
 			fmt.Printf("Unable to create file %s, %+v", file, err)
 		}
-		content := fmt.Sprintf(defaultSnippetFileFormat, defaultSnippetFolder, defaultSnippetName, defaultSnippetFileName, config.DefaultLanguage)
+		content := fmt.Sprintf(defaultSnippetFileFormat, defaultSnippetFolder, defaultSnippetName, config.DefaultLanguage)
 		_, _ = f.WriteString(content)
 		dir = []byte(content)
 	}
@@ -193,73 +251,6 @@ func migrateSnippets(config Config, snippets []Snippet) []Snippet {
 	if migrated {
 		writeSnippets(config, snippets)
 	}
-	return snippets
-}
-
-// scanSnippets scans for any new/removed snippets and adds them to snippets.json
-func scanSnippets(config Config, snippets []Snippet) []Snippet {
-	var modified bool
-	snippetExists := func(path string) bool {
-		for _, snippet := range snippets {
-			if path == snippet.Path() {
-				return true
-			}
-		}
-		return false
-	}
-
-	homeEntries, err := os.ReadDir(config.Home)
-	if err != nil {
-		fmt.Printf("could not scan config home: %v\n", err)
-		return snippets
-	}
-
-	for _, homeEntry := range homeEntries {
-		if !homeEntry.IsDir() {
-			continue
-		}
-
-		folderPath := filepath.Join(config.Home, homeEntry.Name())
-		folderEntries, err := os.ReadDir(folderPath)
-		if err != nil {
-			fmt.Printf("could not scan %q: %v\n", folderPath, err)
-			continue
-		}
-
-		for _, folderEntry := range folderEntries {
-			if folderEntry.IsDir() {
-				continue
-			}
-
-			snippetPath := filepath.Join(homeEntry.Name(), folderEntry.Name())
-			if !snippetExists(snippetPath) {
-				snippets = append(snippets, Snippet{
-					Folder:   homeEntry.Name(),
-					Date:     time.Now(),
-					Name:     folderEntry.Name(),
-					File:     folderEntry.Name(),
-					Language: strings.TrimPrefix(filepath.Ext(folderEntry.Name()), "."),
-				})
-				modified = true
-			}
-		}
-	}
-
-	var idx int
-	for _, snippet := range snippets {
-		snippetPath := filepath.Join(config.Home, snippet.Path())
-		if _, err := os.Stat(snippetPath); !errors.Is(err, fs.ErrNotExist) {
-			snippets[idx] = snippet
-			idx++
-			modified = true
-		}
-	}
-	snippets = snippets[:idx]
-
-	if modified {
-		writeSnippets(config, snippets)
-	}
-
 	return snippets
 }
 

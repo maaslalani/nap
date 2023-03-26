@@ -8,7 +8,11 @@ import (
 )
 
 func TestCLI(t *testing.T) {
-	tmp := tmpHome(t)
+	tmp := t.TempDir()
+	if err := os.Setenv("NAP_HOME", tmp); err != nil {
+		t.Log("could not set NAP_HOME")
+		t.FailNow()
+	}
 
 	t.Run("stdin", func(t *testing.T) {
 		r, w, err := os.Pipe()
@@ -25,8 +29,8 @@ func TestCLI(t *testing.T) {
 		cfg := readConfig()
 		snippets := readSnippets(cfg)
 
-		if len(snippets) != 1 {
-			t.Logf("snippet count is incorrect: got %d but want 1", len(snippets))
+		if len(snippets) != 2 {
+			t.Logf("snippet count is incorrect: got %d but want 2", len(snippets))
 			t.FailNow()
 		}
 
@@ -86,57 +90,9 @@ func TestCLI(t *testing.T) {
 			t.FailNow()
 		}
 
-		if string(out) != "foo/bar.baz\n" {
-			t.Logf(`snippet is incorrect: got %q but want "foo/bar.baz\n"`, string(out))
+		if string(out) != "foo/bar.baz\nmisc/Untitled Snippet.go\n" {
+			t.Logf(`snippet is incorrect: got %q but want "foo/bar.baz\nmisc/Untitled Snippet.go\n"`, string(out))
 			t.FailNow()
 		}
 	})
-}
-
-func TestScan(t *testing.T) {
-	tmp := tmpHome(t)
-
-	cfg := readConfig()
-	snippets := readSnippets(cfg)
-	snippets = scanSnippets(cfg, snippets)
-	initNum := len(snippets)
-
-	tmpSnippetFolder := filepath.Join(tmp, "foo")
-	tmpSnippet := filepath.Join(tmpSnippetFolder, "bar.baz")
-	if err := os.MkdirAll(tmpSnippetFolder, os.ModePerm); err != nil {
-		t.Logf("could not create snippet folder: %v", err)
-		t.FailNow()
-	}
-	if err := os.WriteFile(tmpSnippet, []byte("foo bar baz"), os.ModePerm); err != nil {
-		t.Logf("could not create snippet: %v", err)
-		t.FailNow()
-	}
-
-	snippets = scanSnippets(cfg, snippets)
-	if len(snippets) != initNum+1 {
-		t.Logf("incorrect number of snippets after scanning: want %d but got %d", initNum+1, len(snippets))
-		t.FailNow()
-	}
-
-	if err := os.Remove(tmpSnippet); err != nil {
-		t.Logf("could not remove snippet: %v", err)
-		t.FailNow()
-	}
-
-	snippets = scanSnippets(cfg, snippets)
-	if len(snippets) != initNum {
-		t.Logf("incorrect number of snippets after scanning: want %d but got %d", initNum+1, len(snippets))
-		t.FailNow()
-	}
-}
-
-func tmpHome(t *testing.T) string {
-	t.Helper()
-
-	tmp := t.TempDir()
-	if err := os.Setenv("NAP_HOME", tmp); err != nil {
-		t.Log("could not set NAP_HOME")
-		t.FailNow()
-	}
-	return tmp
 }
