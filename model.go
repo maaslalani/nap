@@ -293,6 +293,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.NewSnippet):
 			m.state = creatingState
 			return m, m.createNewSnippetFile()
+		case key.Matches(msg, m.keys.MoveSnippetDown):
+			m.moveSnippetDown()
+		case key.Matches(msg, m.keys.MoveSnippetUp):
+			m.moveSnippetUp()
 		case key.Matches(msg, m.keys.PasteSnippet):
 			return m, changeState(pastingState)
 		case key.Matches(msg, m.keys.RenameSnippet):
@@ -582,6 +586,22 @@ func (m *Model) selectedFolder() Folder {
 // List returns the active list.
 func (m *Model) List() *list.Model {
 	return m.Lists[m.selectedFolder()]
+}
+
+func (m *Model) moveSnippetDown() {
+	currentPosition := m.List().Index()
+	currentItem := m.List().SelectedItem()
+	m.List().InsertItem(currentPosition+2, currentItem)
+	m.List().RemoveItem(currentPosition)
+	m.List().CursorDown()
+}
+
+func (m *Model) moveSnippetUp() {
+	currentPosition := m.List().Index()
+	currentItem := m.List().SelectedItem()
+	m.List().RemoveItem(currentPosition)
+	m.List().InsertItem(currentPosition-1, currentItem)
+	m.List().CursorUp()
 }
 
 // createNewSnippet creates a new snippet file and adds it to the the list.
