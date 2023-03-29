@@ -125,7 +125,7 @@ func TestScan(t *testing.T) {
 
 	snippets = scanSnippets(cfg, snippets)
 	if len(snippets) != initNum {
-		t.Logf("incorrect number of snippets after scanning: want %d but got %d", initNum+1, len(snippets))
+		t.Logf("incorrect number of snippets after scanning: want %d but got %d", initNum, len(snippets))
 		t.FailNow()
 	}
 }
