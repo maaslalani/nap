@@ -153,6 +153,7 @@ func readSnippets(config Config) []Snippet {
 		if err != nil {
 			fmt.Printf("Unable to create file %s, %+v", file, err)
 		}
+		defer f.Close()
 		content := fmt.Sprintf(defaultSnippetFileFormat, defaultSnippetFolder, defaultSnippetName, defaultSnippetFileName, config.DefaultLanguage)
 		_, _ = f.WriteString(content)
 		dir = []byte(content)
