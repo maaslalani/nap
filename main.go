@@ -361,22 +361,27 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	folderList.Styles.NoItems = lipgloss.NewStyle().Margin(0, 2).Foreground(lipgloss.Color(config.GrayColor))
 	folderList.SetStatusBarItemName("folder", "folders")
 
-	folderNum := state.CurrentFolder
-	if folderNum >= len(folderList.Items()) {
-		folderNum = 0
+	for idx, folder := range foldersSlice {
+		if string(folder) == state.CurrentFolder {
+			folderList.Select(idx)
+			break
+		}
 	}
-	folderList.Select(folderNum)
 
 	content := viewport.New(80, 0)
 
 	lists := map[Folder]*list.Model{}
 
-	snippetNum := state.CurrentSnippet
 	currentFolder := folderList.SelectedItem().(Folder)
 	for folder, items := range folders {
 		snippetList := newList(items, 20, defaultStyles.Snippets.Focused)
-		if currentFolder == folder && snippetNum <= len(snippetList.Items()) {
-			snippetList.Select(snippetNum)
+		if folder == currentFolder {
+			for idx, item := range snippetList.Items() {
+				if s, ok := item.(Snippet); ok && s.File == state.CurrentSnippet {
+					snippetList.Select(idx)
+					break
+				}
+			}
 		}
 		lists[folder] = snippetList
 	}
