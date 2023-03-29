@@ -256,6 +256,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.state == deletingState {
 			switch {
 			case key.Matches(msg, m.keys.Confirm):
+				_ = os.Remove(m.selectedSnippetFilePath())
 				m.List().RemoveItem(m.List().Index())
 				m.state = navigatingState
 				m.updateKeyMap()
