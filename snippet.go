@@ -15,11 +15,8 @@ const (
 	defaultSnippetFolder   = "misc"
 	defaultLanguage        = "go"
 	defaultSnippetName     = "Untitled Snippet"
-	defaultSnippetFileName = "nap.txt"
+	defaultSnippetFileName = defaultSnippetName + "." + defaultLanguage
 )
-
-// defaultSnippetFileFormat is the file to use for an empty snippets.json file.
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "%s", "language": "%s" } ]`
 
 // defaultSnippet is a snippet with all of the default values, used for when
 // there are no snippets available.
@@ -29,6 +26,7 @@ var defaultSnippet = Snippet{
 	Language: defaultLanguage,
 	File:     defaultSnippetFileName,
 	Date:     time.Now(),
+	Tags:     make([]string, 0),
 }
 
 // Snippet represents a snippet of code in a language.

@@ -154,9 +154,8 @@ func readSnippets(config Config) []Snippet {
 			fmt.Printf("Unable to create file %s, %+v", file, err)
 		}
 		defer f.Close()
-		content := fmt.Sprintf(defaultSnippetFileFormat, defaultSnippetFolder, defaultSnippetName, defaultSnippetFileName, config.DefaultLanguage)
-		_, _ = f.WriteString(content)
-		dir = []byte(content)
+		dir = []byte("[]")
+		_, _ = f.Write(dir)
 	}
 	err = json.Unmarshal(dir, &snippets)
 	if err != nil {
@@ -327,15 +326,15 @@ func findSnippet(search string, snippets []Snippet) Snippet {
 }
 
 func runInteractiveMode(config Config, snippets []Snippet) error {
+	if len(snippets) == 0 {
+		// welcome to nap!
+		snippets = append(snippets, defaultSnippet)
+	}
 	state := readState()
 
 	folders := make(map[Folder][]list.Item)
-	var items []list.Item
 	for _, snippet := range snippets {
 		folders[Folder(snippet.Folder)] = append(folders[Folder(snippet.Folder)], list.Item(snippet))
-	}
-	if len(items) <= 0 {
-		items = append(items, list.Item(defaultSnippet))
 	}
 
 	defaultStyles := DefaultStyles(config)
@@ -408,9 +407,6 @@ func runInteractiveMode(config Config, snippets []Snippet) error {
 	var allSnippets []list.Item
 	for _, list := range fm.Lists {
 		allSnippets = append(allSnippets, list.Items()...)
-	}
-	if len(allSnippets) <= 0 {
-		allSnippets = []list.Item{defaultSnippet}
 	}
 	b, err := json.Marshal(allSnippets)
 	if err != nil {
