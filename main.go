@@ -218,6 +218,9 @@ func scanSnippets(config Config, snippets []Snippet) []Snippet {
 		if !homeEntry.IsDir() {
 			continue
 		}
+		if strings.HasPrefix(homeEntry.Name(), ".") {
+			continue
+		}
 
 		folderPath := filepath.Join(config.Home, homeEntry.Name())
 		folderEntries, err := os.ReadDir(folderPath)
