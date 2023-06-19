@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -191,9 +190,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					snippet.Language = m.config.DefaultLanguage
 				}
-				newFile := fmt.Sprintf("%s-%s.%s", snippet.Folder, snippet.Name, snippet.Language)
-				_ = os.Rename(m.selectedSnippetFilePath(), filepath.Join(m.config.Home, newFile))
-				snippet.File = newFile
+				file := fmt.Sprintf("%s.%s", snippet.Name, snippet.Language)
+				snippet.File = file
+				newPath := filepath.Join(m.config.Home, snippet.Path())
+				_ = os.MkdirAll(filepath.Dir(newPath), os.ModePerm)
+				_ = os.Rename(m.selectedSnippetFilePath(), newPath)
 				setCmd := m.List().SetItem(i, snippet)
 				m.pane = snippetPane
 				cmd = tea.Batch(setCmd, m.updateFolders(), m.updateContent())
@@ -203,10 +204,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				return m, changeState(navigatingState)
 			}
-			f, err := os.OpenFile(m.selectedSnippetFilePath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			f, err := os.OpenFile(m.selectedSnippetFilePath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 			if err != nil {
 				return m, changeState(navigatingState)
 			}
+			defer f.Close()
 			f.WriteString(content)
 			return m, changeState(navigatingState)
 		case deletingState:
@@ -254,6 +256,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.state == deletingState {
 			switch {
 			case key.Matches(msg, m.keys.Confirm):
+				_ = os.Remove(m.selectedSnippetFilePath())
 				m.List().RemoveItem(m.List().Index())
 				m.state = navigatingState
 				m.updateKeyMap()
@@ -285,11 +288,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.PreviousPane):
 			m.previousPane()
 		case key.Matches(msg, m.keys.Quit):
+			m.saveState()
 			m.state = quittingState
 			return m, tea.Quit
 		case key.Matches(msg, m.keys.NewSnippet):
 			m.state = creatingState
 			return m, m.createNewSnippetFile()
+		case key.Matches(msg, m.keys.MoveSnippetDown):
+			m.moveSnippetDown()
+		case key.Matches(msg, m.keys.MoveSnippetUp):
+			m.moveSnippetUp()
 		case key.Matches(msg, m.keys.PasteSnippet):
 			return m, changeState(pastingState)
 		case key.Matches(msg, m.keys.RenameSnippet):
@@ -361,7 +369,7 @@ func (m *Model) focusInput(i input) tea.Cmd {
 // selectedSnippetFilePath returns the file path of the snippet that is
 // currently selected.
 func (m *Model) selectedSnippetFilePath() string {
-	return filepath.Join(m.config.Home, m.selectedSnippet().File)
+	return filepath.Join(m.config.Home, m.selectedSnippet().Path())
 }
 
 // nextPane sets the next pane to be active.
@@ -379,12 +387,7 @@ func (m *Model) previousPane() {
 
 // editSnippet opens the editor with the selected snippet file path.
 func (m *Model) editSnippet() tea.Cmd {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "vim"
-	}
-	cmd := exec.Command(editor, m.selectedSnippetFilePath())
-	return tea.ExecProcess(cmd, func(err error) tea.Msg {
+	return tea.ExecProcess(editorCmd(m.selectedSnippetFilePath()), func(err error) tea.Msg {
 		return updateContentMsg(m.selectedSnippet())
 	})
 }
@@ -450,7 +453,7 @@ func (m *Model) updateContentView(msg updateContentMsg) (tea.Model, tea.Cmd) {
 	}
 
 	var b bytes.Buffer
-	content, err := os.ReadFile(filepath.Join(m.config.Home, msg.File))
+	content, err := os.ReadFile(filepath.Join(m.config.Home, Snippet(msg).Path()))
 	if err != nil {
 		m.displayKeyHint(m.noContentHints())
 		return m, nil
@@ -586,6 +589,22 @@ func (m *Model) List() *list.Model {
 	return m.Lists[m.selectedFolder()]
 }
 
+func (m *Model) moveSnippetDown() {
+	currentPosition := m.List().Index()
+	currentItem := m.List().SelectedItem()
+	m.List().InsertItem(currentPosition+2, currentItem)
+	m.List().RemoveItem(currentPosition)
+	m.List().CursorDown()
+}
+
+func (m *Model) moveSnippetUp() {
+	currentPosition := m.List().Index()
+	currentItem := m.List().SelectedItem()
+	m.List().RemoveItem(currentPosition)
+	m.List().InsertItem(currentPosition-1, currentItem)
+	m.List().CursorUp()
+}
+
 // createNewSnippet creates a new snippet file and adds it to the the list.
 func (m *Model) createNewSnippetFile() tea.Cmd {
 	return func() tea.Msg {
@@ -595,8 +614,7 @@ func (m *Model) createNewSnippetFile() tea.Cmd {
 			folder = folderItem.FilterValue()
 		}
 
-		file := fmt.Sprintf("%s-snippet-%d.%s", folder, rand.Intn(1000000), m.config.DefaultLanguage)
-		_, _ = os.Create(filepath.Join(m.config.Home, file))
+		file := fmt.Sprintf("snippet-%d.%s", rand.Intn(1000000), m.config.DefaultLanguage)
 
 		newSnippet := Snippet{
 			Name:     defaultSnippetName,
@@ -606,6 +624,8 @@ func (m *Model) createNewSnippetFile() tea.Cmd {
 			Tags:     []string{},
 			Folder:   folder,
 		}
+
+		_, _ = os.Create(filepath.Join(m.config.Home, newSnippet.Path()))
 
 		m.List().InsertItem(m.List().Index(), newSnippet)
 		return changeStateMsg{navigatingState}
@@ -659,4 +679,15 @@ func (m *Model) View() string {
 		),
 		marginStyle.Render(m.help.View(m.keys)),
 	)
+}
+
+func (m *Model) saveState() {
+	s := State{
+		CurrentFolder:  string(m.selectedFolder()),
+		CurrentSnippet: m.selectedSnippet().File,
+	}
+	err := s.Save()
+	if err != nil {
+		panic(err.Error())
+	}
 }

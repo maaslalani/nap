@@ -11,13 +11,12 @@ import (
 )
 
 // default values for empty state.
-const defaultSnippetFolder = "misc"
-const defaultLanguage = "go"
-const defaultSnippetName = "Untitled Snippet"
-const defaultSnippetFileName = "nap.txt"
-
-// defaultSnippetFileFormat is the file to use for an empty snippets.json file.
-var defaultSnippetFileFormat = `[ { "folder": "%s", "title": "%s", "tags": [], "date": "2022-11-12T15:04:05Z", "favorite": false, "file": "nap.txt", "language": "%s" } ]`
+const (
+	defaultSnippetFolder   = "misc"
+	defaultLanguage        = "go"
+	defaultSnippetName     = "Untitled Snippet"
+	defaultSnippetFileName = defaultSnippetName + "." + defaultLanguage
+)
 
 // defaultSnippet is a snippet with all of the default values, used for when
 // there are no snippets available.
@@ -27,6 +26,7 @@ var defaultSnippet = Snippet{
 	Language: defaultLanguage,
 	File:     defaultSnippetFileName,
 	Date:     time.Now(),
+	Tags:     make([]string, 0),
 }
 
 // Snippet represents a snippet of code in a language.
@@ -46,10 +46,20 @@ func (s Snippet) String() string {
 	return fmt.Sprintf("%s/%s.%s", s.Folder, s.Name, s.Language)
 }
 
+// LegacyPath returns the legacy path <folder>-<file>
+func (s Snippet) LegacyPath() string {
+	return s.File
+}
+
+// Path returns the path <folder>/<file>
+func (s Snippet) Path() string {
+	return filepath.Join(s.Folder, s.File)
+}
+
 // Content returns the snippet contents.
 func (s Snippet) Content(highlight bool) string {
 	config := readConfig()
-	file := filepath.Join(config.Home, s.File)
+	file := filepath.Join(config.Home, s.Path())
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return ""
