@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/adrg/xdg v0.4.0
 	github.com/alecthomas/chroma/v2 v2.4.0
+	github.com/aquilax/truncate v1.0.0
 	github.com/atotto/clipboard v0.1.4
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/charmbracelet/bubbles v0.14.1-0.20221107150503-fac7a01329ea
