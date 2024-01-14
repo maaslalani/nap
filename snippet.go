@@ -73,6 +73,7 @@ func (s Snippet) Content(highlight bool, args []string) string {
 				continue
 			} //this is the snippet name
 			s_content = strings.ReplaceAll(s_content, "$"+strconv.Itoa(i), param)
+			s_content = strings.ReplaceAll(s_content, "$l"+strconv.Itoa(i), strings.ToLower(param))
 		}
 	}
 
