@@ -64,7 +64,7 @@ func runCLI(args []string) {
 			fmt.Println(helpText)
 		default:
 			snippet := findSnippet(args[0], snippets)
-			fmt.Print(snippet.Content(isatty.IsTerminal(os.Stdout.Fd())))
+			fmt.Print(snippet.Content(isatty.IsTerminal(os.Stdout.Fd()), args))
 		}
 		return
 	}

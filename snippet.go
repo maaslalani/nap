@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alecthomas/chroma/v2/quick"
@@ -57,22 +59,31 @@ func (s Snippet) Path() string {
 }
 
 // Content returns the snippet contents.
-func (s Snippet) Content(highlight bool) string {
+func (s Snippet) Content(highlight bool, args []string) string {
 	config := readConfig()
 	file := filepath.Join(config.Home, s.Path())
 	content, err := os.ReadFile(file)
 	if err != nil {
 		return ""
 	}
+	s_content := string(content)
+	if len(args) > 1 {
+		for i, param := range args {
+			if i == 0 {
+				continue
+			} //this is the snippet name
+			s_content = strings.ReplaceAll(s_content, "%"+strconv.Itoa(i), param)
+		}
+	}
 
 	if !highlight {
-		return string(content)
+		return s_content
 	}
 
 	var b bytes.Buffer
-	err = quick.Highlight(&b, string(content), s.Language, "terminal16m", config.Theme)
+	err = quick.Highlight(&b, s_content, s.Language, "terminal16m", config.Theme)
 	if err != nil {
-		return string(content)
+		return s_content
 	}
 	return b.String()
 }
